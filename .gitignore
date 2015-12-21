@@ -1,0 +1,9 @@
+*.py[co]
+*.sw[po]
+*.egg*
+.coverage
+build
+.DS_Store
+*.swp
+*~
+.tox
