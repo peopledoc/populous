@@ -7,3 +7,4 @@ build
 *.swp
 *~
 .tox
+db.sqlite3
