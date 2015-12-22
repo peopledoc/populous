@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+
 
 ABODE_TYPES = (
     ('SH', 'Small house'),
@@ -15,8 +15,6 @@ GENDERS = (
 
 
 class World(models.Model):
-    god = models.ForeignKey(User, related_name='worlds')
-
     name = models.CharField(max_length=30)
     description = models.TextField()
 
