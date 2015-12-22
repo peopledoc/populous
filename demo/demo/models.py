@@ -27,7 +27,8 @@ class City(models.Model):
 
 class Abode(models.Model):
     city = models.ForeignKey(City, related_name='abodes')
-    owner = models.OneToOneField('Citizen', related_name='owned_house')
+    owner = models.OneToOneField('Citizen', related_name='owned_abode',
+                                 null=True)
 
     type = models.CharField(max_length=2, choices=ABODE_TYPES)
 
