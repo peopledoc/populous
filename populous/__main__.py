@@ -1,10 +1,4 @@
-import click
-
-
-@click.command()
-def populous():
-    click.echo("Hello World!")
-
+from .cli import cli
 
 if __name__ == '__main__':
-    populous()
+    cli()

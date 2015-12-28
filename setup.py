@@ -18,7 +18,7 @@ setup(
     install_requires=requirements,
     entry_points={
         'console_scripts': [
-            'populous = populous.__main__:populous'
+            'populous = populous.__main__:cli'
         ]
     },
     classifiers=[
