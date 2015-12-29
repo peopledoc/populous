@@ -35,6 +35,7 @@ class Blueprint(object):
 
 
 class Item(namedtuple('Item', ITEM_ATTRIBUTES)):
+    __slots__ = ()
 
     @classmethod
     def load(cls, name, attrs):
@@ -70,6 +71,7 @@ class Item(namedtuple('Item', ITEM_ATTRIBUTES)):
 
 
 class Count(namedtuple('Count', COUNT_ATTRIBUTES)):
+    __slots__ = ()
 
     @classmethod
     def load(cls, attrs):
@@ -103,6 +105,7 @@ class Count(namedtuple('Count', COUNT_ATTRIBUTES)):
 
 
 class Field(namedtuple('Field', FIELD_ATTRIBUTES)):
+    __slots__ = ()
 
     @classmethod
     def load(cls, name, attrs):
