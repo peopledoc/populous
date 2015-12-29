@@ -44,6 +44,14 @@ class Blueprint(object):
             raise ValidationError("The item '{}' was not found in the "
                                   "blueprint".format(self.by))
 
+    def get_total_for(self, name):
+        item = self[name]
+
+        if not item.count.by:
+            return item.count.number
+        else:
+            return self.get_total_for(item.count.by) * item.count.number
+
 
 class Item(namedtuple('Item', ITEM_ATTRIBUTES)):
     __slots__ = ()
