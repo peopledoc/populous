@@ -2,7 +2,7 @@ from collections import namedtuple
 
 ITEM_ATTRIBUTES = ('name', 'table', 'count', 'fields')
 COUNT_ATTRIBUTES = ('number', 'by')
-FIELD_ATTRIBUTES = ('generator', 'params')
+FIELD_ATTRIBUTES = ('name', 'generator', 'params')
 
 
 class ValidationError(Exception):
@@ -63,9 +63,9 @@ class Item(namedtuple('Item', ITEM_ATTRIBUTES)):
             name=name,
             table=table,
             count=Count.load(count),
-            fields={
-                name: Field.load(desc) for name, desc in fields.items()
-            },
+            fields=tuple(
+                Field.load(name, desc) for name, desc in fields.items()
+            ),
         )
 
 
@@ -99,16 +99,13 @@ class Count(namedtuple('Count', COUNT_ATTRIBUTES)):
             raise ValidationError("'count' attribute got unexpected arguments"
                                   ": {}".format(', '.join(attrs.keys())))
 
-        return cls(
-            number=number,
-            by=by,
-        )
+        return cls(number=number, by=by)
 
 
 class Field(namedtuple('Field', FIELD_ATTRIBUTES)):
 
     @classmethod
-    def load(cls, attrs):
+    def load(cls, name, attrs):
         if not isinstance(attrs, dict):
             raise ValidationError("A field description must be a dictionary "
                                   "(got: {})".format(type(attrs)))
@@ -130,7 +127,4 @@ class Field(namedtuple('Field', FIELD_ATTRIBUTES)):
             raise ValidationError("Field descrption got unexpected arguments: "
                                   "{}".format(', '.join(attrs.keys())))
 
-        return cls(
-            generator=generator,
-            params=params
-        )
+        return cls(name=name, generator=generator, params=params)
