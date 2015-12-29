@@ -18,8 +18,9 @@ def predict(files):
     """
     blueprint = Blueprint.from_description(load_yaml(*files))
 
-    for item in blueprint.items:
+    for item in blueprint:
         click.echo("{name}: {count} {by}".format(
-            name=item.name, count=item.count.number,
-            by="by {}".format(item.count.by) if item.count.by else ""
+            name=item.name, count=blueprint.get_total_for(item.name),
+            by="({} by {})".format(item.count.number, item.count.by)
+               if item.count.by else ""
         ))
