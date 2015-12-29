@@ -33,6 +33,17 @@ class Blueprint(object):
             for name, attrs in description.items()
         })
 
+    def __iter__(self):
+        for item in self.items.values():
+            yield item
+
+    def __getitem__(self, key):
+        try:
+            return self.items[key]
+        except KeyError:
+            raise ValidationError("The item '{}' was not found in the "
+                                  "blueprint".format(self.by))
+
 
 class Item(namedtuple('Item', ITEM_ATTRIBUTES)):
     __slots__ = ()
