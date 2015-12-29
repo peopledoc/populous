@@ -1,6 +1,6 @@
 from collections import namedtuple
 
-ITEM_ATTRIBUTES = ('table', 'count', 'fields')
+ITEM_ATTRIBUTES = ('name', 'table', 'count', 'fields')
 COUNT_ATTRIBUTES = ('number', 'by')
 FIELD_ATTRIBUTES = ('generator', 'params')
 
@@ -11,32 +11,33 @@ class ValidationError(Exception):
 
 class Blueprint(object):
 
-    def __init__(self, items):
-        self.items = items
+    def __init__(self, items=None):
+        self.items = items or {}
 
     @classmethod
     def from_description(cls, description):
-        items = {}
-
         if not isinstance(description, dict):
             raise ValidationError("You must describe the items as a "
                                   "dictionary (got: {})"
                                   .format(type(description)))
 
-        for name, attrs in description.items():
-            try:
-                items[name] = Item.load(attrs)
-            except ValidationError as e:
-                raise ValidationError("Error loading item '{}': {}"
-                                      .format(name, e))
+        def _load_item(name, attrs):
+                try:
+                    return Item.load(name, attrs)
+                except ValidationError as e:
+                    raise ValidationError("Error loading item '{}': {}"
+                                          .format(name, e))
 
-        return cls(items)
+        return cls({
+            name: _load_item(name, attrs)
+            for name, attrs in description.items()
+        })
 
 
 class Item(namedtuple('Item', ITEM_ATTRIBUTES)):
 
     @classmethod
-    def load(cls, attrs):
+    def load(cls, name, attrs):
         if not isinstance(attrs, dict):
             raise ValidationError("Blueprint items must be dictionaries "
                                   "(got: {})".format(type(attrs)))
@@ -59,6 +60,7 @@ class Item(namedtuple('Item', ITEM_ATTRIBUTES)):
                                   .format(', '.join(attrs.keys())))
 
         return cls(
+            name=name,
             table=table,
             count=Count.load(count),
             fields={
