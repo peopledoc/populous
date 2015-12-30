@@ -57,14 +57,6 @@ class Blueprint(object):
         self._items = items
         self.check_circular_dependencies()
 
-    def get_total_for(self, name):
-        item = self[name]
-
-        if not item.count.by:
-            return item.count.number
-        else:
-            return self.get_total_for(item.count.by) * item.count.number
-
     def check_circular_dependencies(self):
 
         def _check_ancestors(current, ancestors):
@@ -119,6 +111,15 @@ class Item(namedtuple('Item', ITEM_ATTRIBUTES)):
             ),
             blueprint=blueprint,
         )
+
+    @property
+    def total(self):
+        by = self.count.by
+
+        if not by:
+            return self.count.number
+        else:
+            return self.blueprint[by].total * self.count.number
 
 
 class Count(namedtuple('Count', COUNT_ATTRIBUTES)):

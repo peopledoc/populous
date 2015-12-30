@@ -20,7 +20,7 @@ def predict(files):
 
     for item in blueprint:
         click.echo("{name}: {count} {by}".format(
-            name=item.name, count=blueprint.get_total_for(item.name),
+            name=item.name, count=item.total,
             by="({} by {})".format(item.count.number, item.count.by)
                if item.count.by else ""
         ))
