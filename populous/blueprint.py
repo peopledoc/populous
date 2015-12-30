@@ -12,9 +12,8 @@ class ValidationError(Exception):
 class Blueprint(object):
 
     def __init__(self, items=None):
+        self._items = {}
         self.items = items or {}
-
-        self.check_circular_dependencies()
 
     @classmethod
     def from_description(cls, description):
@@ -45,6 +44,15 @@ class Blueprint(object):
         except KeyError:
             raise ValidationError("The item '{}' was not found in the "
                                   "blueprint".format(self.by))
+
+    @property
+    def items(self):
+        return self._items
+
+    @items.setter
+    def items(self, items):
+        self._items = items
+        self.check_circular_dependencies()
 
     def get_total_for(self, name):
         item = self[name]
