@@ -1,6 +1,6 @@
 from collections import namedtuple
 
-ITEM_ATTRIBUTES = ('name', 'table', 'count', 'fields')
+ITEM_ATTRIBUTES = ('name', 'table', 'count', 'fields', 'blueprint')
 COUNT_ATTRIBUTES = ('number', 'by')
 FIELD_ATTRIBUTES = ('name', 'generator', 'params')
 
@@ -22,17 +22,20 @@ class Blueprint(object):
                                   "dictionary (got: {})"
                                   .format(type(description)))
 
+        blueprint = cls()
+
         def _load_item(name, attrs):
                 try:
-                    return Item.load(name, attrs)
+                    return Item.load(blueprint, name, attrs)
                 except ValidationError as e:
                     raise ValidationError("Error loading item '{}': {}"
                                           .format(name, e))
 
-        return cls({
+        blueprint.items = {
             name: _load_item(name, attrs)
             for name, attrs in description.items()
-        })
+        }
+        return blueprint
 
     def __iter__(self):
         for item in self.items.values():
@@ -85,7 +88,7 @@ class Item(namedtuple('Item', ITEM_ATTRIBUTES)):
     __slots__ = ()
 
     @classmethod
-    def load(cls, name, attrs):
+    def load(cls, blueprint, name, attrs):
         if not isinstance(attrs, dict):
             raise ValidationError("Blueprint items must be dictionaries "
                                   "(got: {})".format(type(attrs)))
@@ -114,6 +117,7 @@ class Item(namedtuple('Item', ITEM_ATTRIBUTES)):
             fields=tuple(
                 Field.load(name, desc) for name, desc in fields.items()
             ),
+            blueprint=blueprint,
         )
 
 
