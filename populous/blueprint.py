@@ -14,6 +14,8 @@ class Blueprint(object):
     def __init__(self, items=None):
         self.items = items or {}
 
+        self.check_circular_dependencies()
+
     @classmethod
     def from_description(cls, description):
         if not isinstance(description, dict):
@@ -51,6 +53,24 @@ class Blueprint(object):
             return item.count.number
         else:
             return self.get_total_for(item.count.by) * item.count.number
+
+    def check_circular_dependencies(self):
+
+        def _check_ancestors(current, ancestors):
+            parent = current.count.by
+
+            if not parent:
+                return
+
+            if parent in ancestors:
+                raise ValueError("Circular dependency between {} and {}"
+                                 .format(current.name, parent))
+
+            ancestors.add(current.name)
+            _check_ancestors(self[parent], ancestors)
+
+        for item in self:
+            _check_ancestors(item, set())
 
 
 class Item(namedtuple('Item', ITEM_ATTRIBUTES)):
