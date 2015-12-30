@@ -1,12 +1,10 @@
 from collections import namedtuple
 
+from populous.exceptions import ValidationError
+
 ITEM_ATTRIBUTES = ('name', 'table', 'count', 'fields', 'blueprint')
 COUNT_ATTRIBUTES = ('number', 'by')
 FIELD_ATTRIBUTES = ('name', 'generator', 'params')
-
-
-class ValidationError(Exception):
-    pass
 
 
 class Blueprint(object):
