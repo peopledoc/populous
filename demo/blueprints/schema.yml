@@ -1,4 +1,4 @@
-world:
+world: &world
   table: demo_world
   count: 0
   fields:
@@ -19,7 +19,7 @@ world:
         min_length: 0
         max_length: null
 
-city:
+city: &city
   table: demo_city
   count: 0
   fields:
@@ -40,7 +40,7 @@ city:
         min_length: 1
         max_length: 40
 
-abode:
+abode: &abode
   table: demo_abode
   count: 0
   fields:
@@ -67,7 +67,7 @@ abode:
         null: false
         choices: ['SH', 'H', 'SB', 'B']
 
-citizen:
+citizen: &citizen
   table: demo_citizen
   count: 0
   fields:
@@ -109,7 +109,7 @@ citizen:
         null: false
         choices: ['M', 'F']
 
-hobby:
+hobby: &hobby
   table: demo_hobby
   count: 0
   fields:
@@ -124,7 +124,7 @@ hobby:
         min_length: 1
         max_length: 40
 
-hobby_citizens_through_table:
+hobby_citizens_through_table: &hobby_citizens_through_table
   table: demo_hobby_citizens
   count: 0
   fields:
