@@ -1,0 +1,21 @@
+world:
+  <<: *world
+  count: 5
+
+city:
+  <<: *city
+  count:
+    number: 10
+    by: world
+
+abode:
+  <<: *abode
+  count:
+    number: 100
+    by: city
+
+citizen:
+  <<: *citizen
+  count:
+    number: 2
+    by: abode
