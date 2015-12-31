@@ -2,13 +2,21 @@ import collections
 
 import yaml
 
+from .exceptions import YAMLError
+
 
 def load_yaml(*filenames):
     """
     Parse the given files as if they were a single YAML file.
     """
     with ChainedFileObject(*filenames) as f:
-        return yaml.load(f)
+        try:
+            return yaml.load(f)
+        except yaml.YAMLError as e:
+            raise YAMLError(
+                f.current.name if f.current else '<file>',
+                e.problem
+            )
 
 
 class ChainedFileObject(object):

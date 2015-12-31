@@ -2,6 +2,16 @@ import click
 
 from .loader import load_yaml
 from .blueprint import Blueprint
+from .exceptions import ValidationError, YAMLError
+
+
+def get_blueprint(*files):
+    try:
+        return Blueprint.from_description(load_yaml(*files))
+    except (YAMLError, ValidationError) as e:
+        raise click.ClickException(e.message)
+    except Exception as e:
+        pass
 
 
 @click.group()
@@ -16,7 +26,7 @@ def predict(files):
     """
     Predict how many objects will be created if the given files are used.
     """
-    blueprint = Blueprint.from_description(load_yaml(*files))
+    blueprint = get_blueprint(*files)
 
     for item in blueprint:
         click.echo("{name}: {count} {by}".format(
