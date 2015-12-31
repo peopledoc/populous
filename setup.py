@@ -4,6 +4,7 @@ import populous
 
 requirements = [
     "click",
+    "cached-property",
 ]
 
 setup(
