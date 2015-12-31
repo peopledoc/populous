@@ -2,11 +2,12 @@ from collections import namedtuple
 
 from cached_property import cached_property
 
+from populous import generators
 from populous.exceptions import ValidationError
 
 ITEM_ATTRIBUTES = ('name', 'table', 'count', 'fields', 'blueprint')
 COUNT_ATTRIBUTES = ('number', 'by')
-FIELD_ATTRIBUTES = ('name', 'generator', 'params')
+FIELD_ATTRIBUTES = ('name', 'generator')
 
 
 class Blueprint(object):
@@ -164,12 +165,12 @@ class Field(namedtuple('Field', FIELD_ATTRIBUTES)):
             raise ValidationError("A field description must be a dictionary "
                                   "(got: {})".format(type(attrs)))
 
-        generator = attrs.pop('generator', None)
+        generator_cls = attrs.pop('generator', None)
 
-        if not isinstance(generator, str):
+        if not isinstance(generator_cls, str):
             raise ValidationError("The generator in a field description must "
                                   "be a string (got: {})"
-                                  .format(type(generator)))
+                                  .format(type(generator_cls)))
 
         params = attrs.pop('params', {})
 
@@ -181,4 +182,13 @@ class Field(namedtuple('Field', FIELD_ATTRIBUTES)):
             raise ValidationError("Field descrption got unexpected arguments: "
                                   "{}".format(', '.join(attrs.keys())))
 
-        return cls(name=name, generator=generator, params=params)
+        try:
+            generator_cls = getattr(generators, generator_cls)
+        except AttributeError:
+            raise ValidationError("Generator '{}' not found"
+                                  .format(generator_cls))
+
+        # TODO: Validate params
+        generator = generator_cls(**params)
+
+        return cls(name=name, generator=generator)
