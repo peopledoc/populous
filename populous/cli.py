@@ -11,7 +11,8 @@ def get_blueprint(*files):
     except (YAMLError, ValidationError) as e:
         raise click.ClickException(e.message)
     except Exception as e:
-        pass
+        raise click.ClickException("Unexpected error during the blueprint "
+                                   "loading: {}".format(e.message))
 
 
 @click.group()
