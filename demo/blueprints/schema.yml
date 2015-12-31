@@ -5,17 +5,17 @@ world: &world
     id:
       generator: AutoIncrement
       params:
-        null: false
+        nullable: false
     name:
       generator: Text
       params:
-        null: false
+        nullable: false
         min_length: 1
         max_length: 30
     description:
       generator: Text
       params:
-        null: false
+        nullable: false
         min_length: 0
         max_length: null
 
@@ -26,17 +26,17 @@ city: &city
     id:
       generator: AutoIncrement
       params:
-        null: false
+        nullable: false
     world_id:
       generator: ForeignKey
       params:
-        null: false
+        nullable: false
         target: world
         field: id
     name:
       generator: Text
       params:
-        null: false
+        nullable: false
         min_length: 1
         max_length: 40
 
@@ -47,24 +47,24 @@ abode: &abode
     id:
       generator: AutoIncrement
       params:
-        null: false
+        nullable: false
     city_id:
       generator: ForeignKey
       params:
-        null: false
+        nullable: false
         target: city
         field: id
     owner:
       generator: ForeignKey
       params:
-        null: true
+        nullable: true
         target: citizen
         field: id
         unique: true
     type:
       generator: Choices
       params:
-        null: false
+        nullable: false
         choices: ['SH', 'H', 'SB', 'B']
 
 citizen: &citizen
@@ -74,39 +74,39 @@ citizen: &citizen
     id:
       generator: AutoIncrement
       params:
-        null: false
+        nullable: false
     abode_id:
       generator: ForeignKey
       params:
-        null: false
+        nullable: false
         target: abode
         field: id
     first_name:
       generator: Text
       params:
-        null: false
+        nullable: false
         min_length: 1
         max_length: 20
     middle_name:
       generator: Text
       params:
-        null: false
+        nullable: false
         min_length: 0
         max_length: 20
     last_name:
       generator: Text
       params:
-        null: false
+        nullable: false
         min_length: 1
         max_length: 20
     birth:
       generator: Date
       params:
-        null: false
+        nullable: false
     gender:
       generator: Choices
       params:
-        null: false
+        nullable: false
         choices: ['M', 'F']
 
 hobby: &hobby
@@ -116,11 +116,11 @@ hobby: &hobby
     id:
       generator: AutoIncrement
       params:
-        null: false
+        nullable: false
     name:
       generator: Text
       params:
-        null: false
+        nullable: false
         min_length: 1
         max_length: 40
 
@@ -131,16 +131,16 @@ hobby_citizens_through_table: &hobby_citizens_through_table
     id:
       generator: AutoIncrement
       params:
-        null: false
+        nullable: false
     hobby_id:
       generator: ForeignKey
       params:
-        null: false
+        nullable: false
         target: hobby
         field: id
     citizen_id:
       generator: ForeignKey
       params:
-        null: false
+        nullable: false
         target: citizen
         field: id
