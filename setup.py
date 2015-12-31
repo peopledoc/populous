@@ -5,6 +5,7 @@ import populous
 requirements = [
     "click",
     "cached-property",
+    "fake-factory",
 ]
 
 setup(
