@@ -1,5 +1,7 @@
 from collections import namedtuple
 
+from cached_property import cached_property
+
 from populous.exceptions import ValidationError
 
 ITEM_ATTRIBUTES = ('name', 'table', 'count', 'fields', 'blueprint')
@@ -75,7 +77,6 @@ class Blueprint(object):
 
 
 class Item(namedtuple('Item', ITEM_ATTRIBUTES)):
-    __slots__ = ()
 
     @classmethod
     def load(cls, blueprint, name, attrs):
@@ -110,7 +111,7 @@ class Item(namedtuple('Item', ITEM_ATTRIBUTES)):
             blueprint=blueprint,
         )
 
-    @property
+    @cached_property
     def total(self):
         by = self.count.by
 
