@@ -47,7 +47,7 @@ class Blueprint(object):
             return self.items[key]
         except KeyError:
             raise ValidationError("The item '{}' was not found in the "
-                                  "blueprint".format(self.by))
+                                  "blueprint".format(key))
 
     @property
     def items(self):
