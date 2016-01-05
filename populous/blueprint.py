@@ -120,6 +120,11 @@ class Item(namedtuple('Item', ITEM_ATTRIBUTES)):
         else:
             return self.blueprint[by].total * self.count.number
 
+    def generate(self):
+        values = tuple(field.generator() for field in self.fields)
+
+        for i in xrange(self.total):
+            yield tuple(next(value) for value in values)
 
 
 class Count(namedtuple('Count', COUNT_ATTRIBUTES)):
