@@ -120,9 +120,6 @@ class Item(namedtuple('Item', ITEM_ATTRIBUTES)):
         else:
             return self.blueprint[by].total * self.count.number
 
-    @cached_property
-    def row(self):
-        return namedtuple(self.name, (field.name for field in self.fields))
 
 
 class Count(namedtuple('Count', COUNT_ATTRIBUTES)):
