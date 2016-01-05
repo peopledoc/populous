@@ -106,9 +106,8 @@ class Item(namedtuple('Item', ITEM_ATTRIBUTES)):
             name=name,
             table=table,
             count=Count.load(count),
-            fields=tuple(
-                Field.load(name, desc) for name, desc in fields.items()
-            ),
+            fields=tuple(Field.load(blueprint, name, field, desc)
+                         for field, desc in fields.items()),
             blueprint=blueprint,
         )
 
@@ -164,7 +163,7 @@ class Field(namedtuple('Field', FIELD_ATTRIBUTES)):
     __slots__ = ()
 
     @classmethod
-    def load(cls, name, attrs):
+    def load(cls, blueprint, item_name, name, attrs):
         if not isinstance(attrs, dict):
             raise ValidationError("A field description must be a dictionary "
                                   "(got: {})".format(type(attrs)))
@@ -193,6 +192,8 @@ class Field(namedtuple('Field', FIELD_ATTRIBUTES)):
                                   .format(generator_cls))
 
         # TODO: Validate params
-        generator = generator_cls(**params)
+        generator = generator_cls(
+            blueprint=blueprint, item_name=item_name, **params
+        )
 
         return cls(name=name, generator=generator)
