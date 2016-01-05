@@ -13,14 +13,16 @@ class Text(Generator):
         self.min_length = min_length or 0
         self.max_length = max_length or 10000
 
-    @property
     def letters(self):
         while True:
             yield random.choice(string.printable)
 
-    def next(self, *args, **kwargs):
-        return ''.join(
-            itertools.islice(
-                self.letters, random.randint(self.min_length, self.max_length)
+    def generate(self):
+        letters = self.letters()
+
+        while True:
+            yield ''.join(
+                itertools.islice(
+                    letters, random.randint(self.min_length, self.max_length)
+                )
             )
-        )

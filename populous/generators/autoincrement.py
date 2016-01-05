@@ -9,7 +9,7 @@ class AutoIncrement(Generator):
         super(AutoIncrement, self).__init__(**kwargs)
 
         self.start = start
-        self.count = count(self.start)
 
-    def next(self, *args, **kwargs):
-        return next(self.count)
+    def generate(self):
+        for i in count(self.start):
+            yield i

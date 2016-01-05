@@ -10,5 +10,6 @@ class Choices(Generator):
 
         self.choices = tuple(choices)
 
-    def next(self, *args, **kwargs):
-        return random.choice(self.choices)
+    def generate(self):
+        while True:
+            yield random.choice(self.choices)

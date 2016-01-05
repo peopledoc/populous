@@ -12,11 +12,11 @@ class ForeignKey(Generator):
         self.target = target
         self.field = field
 
-    def next(self, populator, lazy=True, **kwargs):
-        try:
-            instance = kwargs[self.target]
-        except KeyError:
-            objects = populator.get(self.target)
-            instance = random.choice(objects)
+    def generate(self):
+        target = self.blueprint[self.target]
 
-        return getattr(instance, self.field)
+        while True:
+            # TODO: Support other types than AutoIncrement
+            yield random.randint(0, target.total - 1)
+
+

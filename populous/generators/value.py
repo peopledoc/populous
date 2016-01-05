@@ -8,5 +8,6 @@ class Value(Generator):
 
         self.value = value
 
-    def next(self, *args, **kwargs):
-        return self.value
+    def generate(self):
+        while True:
+            yield self.value
