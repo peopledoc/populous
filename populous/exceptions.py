@@ -12,3 +12,7 @@ class YAMLError(PopulousError):
 
 class ValidationError(PopulousError):
     pass
+
+
+class BackendError(PopulousError):
+    pass
