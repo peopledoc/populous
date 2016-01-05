@@ -1,5 +1,7 @@
 import random
 
+from itertools import chain, repeat
+
 from .base import Generator
 
 
@@ -15,8 +17,15 @@ class ForeignKey(Generator):
     def generate(self):
         target = self.blueprint[self.target]
 
-        while True:
-            # TODO: Support other types than AutoIncrement
-            yield random.randint(0, target.total - 1)
+        if self.item.count.by == self.target:
+            pks = chain.from_iterable(
+                repeat(pk, self.item.count.number)
+                for pk in xrange(0, target.total)
+            )
 
-
+            for pk in pks:
+                yield pk
+        else:
+            while True:
+                # TODO: Support other types than AutoIncrement
+                yield random.randint(0, target.total - 1)
