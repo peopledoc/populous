@@ -22,7 +22,7 @@ def cli():
 
 
 @cli.command()
-@click.argument('files', nargs=-1)
+@click.argument('files', nargs=-1, required=True)
 def predict(files):
     """
     Predict how many objects will be created if the given files are used.
