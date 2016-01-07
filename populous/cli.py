@@ -1,3 +1,5 @@
+import importlib
+
 import click
 
 from .loader import load_yaml
@@ -26,6 +28,37 @@ def run():
     pass
 
 
+def _generic_run(modulename, classname, files, **kwargs):
+    blueprint = get_blueprint(*files)
+
+    try:
+        try:
+            module = importlib.import_module('.' + modulename,
+                                             package='populous.backends')
+            backend_cls = getattr(module, classname)
+        except (ImportError, AttributeError):
+            click.ClickException("Backend not found.")
+
+        backend = backend_cls(**kwargs)
+
+        try:
+            with backend.transaction() as trans:
+                for item in blueprint:
+                    if not item.total:
+                        continue
+
+                    label = 'Creating {} {}'.format(item.total, item.name)
+                    with click.progressbar(label=label,
+                                           length=item.total) as bar:
+                        for progress in backend.generate(item, trans):
+                            bar.update(progress)
+        finally:
+            backend.close()
+
+    except BackendError as e:
+        raise click.ClickException(e.message)
+
+
 @run.command()
 @click.option('--host', default='localhost', help="Database host address")
 @click.option('--port', default=5432, type=int, help="Database host port")
@@ -34,21 +67,8 @@ def run():
 @click.option('--password', help="Postgresql password used to authenticate")
 @click.argument('files', nargs=-1, required=True)
 def postgresql(host, port, db, user, password, files):
-    blueprint = get_blueprint(*files)
-
-    try:
-        from populous.backends.postgres import Postgres
-
-        backend = Postgres(database=db, user=user, password=password,
-                           host=host, port=port)
-
-        try:
-            backend.generate(blueprint)
-        finally:
-            backend.close()
-
-    except BackendError as e:
-        raise click.ClickException(e.message)
+    return _generic_run('postgres', 'Postgres', files, host=host, port=port,
+                        database=db, user=user, password=password)
 
 
 @cli.command()

@@ -1,3 +1,4 @@
+import contextlib
 
 
 class Backend(object):
@@ -5,7 +6,14 @@ class Backend(object):
     def __init__(self, *args, **kwargs):
         self.closed = False
 
-    def generate(self, blueprint):
+    def transaction(self):
+        @contextlib.contextmanager
+        def dummy():
+            yield
+
+        return dummy()
+
+    def generate(self, item, transaction):
         raise NotImplementedError()
 
     def close(self):

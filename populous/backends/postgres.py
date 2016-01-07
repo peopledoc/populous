@@ -31,23 +31,11 @@ class Postgres(Backend):
             raise BackendError("Error connecting to Postgresql DB: {}"
                                .format(e))
 
-    def generate(self, blueprint):
+    def transaction(self):
         with self.conn:
-            with self.conn.cursor() as cur:
-                self._generate(blueprint, cur)
+            return self.conn.cursor()
 
-    def _generate(self, blueprint, cur):
-        for item in blueprint:
-            if not item.total:
-                continue
-
-            try:
-                self._generate_item(item, cur)
-            except psycopg2.DatabaseError as e:
-                raise BackendError("Error during the generation of "
-                                   "'{}': {}".format(item.name, e.message))
-
-    def _generate_item(self, item, cur):
+    def generate(self, item, cursor):
         for size, batch in batches(item.generate(), item.total):
             stmt = "INSERT INTO {} ({}) VALUES {}".format(
                 item.table,
@@ -57,7 +45,13 @@ class Postgres(Backend):
                 ) for _ in xrange(size))
             )
 
-            cur.execute(stmt, tuple(v for vs in batch for v in vs))
+            try:
+                cursor.execute(stmt, tuple(v for vs in batch for v in vs))
+            except psycopg2.DatabaseError as e:
+                raise BackendError("Error during the generation of "
+                                   "'{}': {}".format(item.name, e.message))
+
+            yield size
 
     def close(self):
         if not self.closed:
