@@ -43,7 +43,16 @@ def postgresql(host, port, db, user, password, files):
                            host=host, port=port)
 
         try:
-            backend.generate(blueprint)
+            with backend.transaction() as trans:
+                for item in blueprint:
+                    if not item.total:
+                        continue
+
+                    label = 'Creating {} {}'.format(item.total, item.name)
+                    with click.progressbar(label=label,
+                                           length=item.total) as bar:
+                        for progress in backend.generate(item, trans):
+                            bar.update(progress)
         finally:
             backend.close()
 
