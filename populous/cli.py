@@ -85,3 +85,19 @@ def predict(files):
             by="({} by {})".format(item.count.number, item.count.by)
                if item.count.by else ""
         ))
+
+
+@cli.command()
+def generators():
+    """
+    List all the available generators.
+    """
+    from populous import generators
+
+    base = generators.Generator
+
+    for name in dir(generators):
+        generator = getattr(generators, name)
+
+        if isinstance(generator, type) and issubclass(generator, base):
+            click.echo(generator.__name__)
