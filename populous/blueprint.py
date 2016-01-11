@@ -107,7 +107,8 @@ class Item(namedtuple('Item', ITEM_ATTRIBUTES)):
             table=table,
             count=Count.load(count),
             fields=tuple(Field.load(blueprint, name, field, desc)
-                         for field, desc in fields.items()),
+                         for field, desc in fields.items()
+                         if desc),
             blueprint=blueprint,
         )
 
