@@ -1,3 +1,5 @@
+import contextlib
+
 from itertools import islice
 
 from populous.exceptions import BackendError
@@ -31,9 +33,10 @@ class Postgres(Backend):
             raise BackendError("Error connecting to Postgresql DB: {}"
                                .format(e))
 
+    @contextlib.contextmanager
     def transaction(self):
         with self.conn:
-            return self.conn.cursor()
+            yield self.conn.cursor()
 
     def generate(self, item, cursor):
         for size, batch in batches(item.generate(), item.total):

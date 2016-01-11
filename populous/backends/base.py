@@ -6,12 +6,9 @@ class Backend(object):
     def __init__(self, *args, **kwargs):
         self.closed = False
 
+    @contextlib.contextmanager
     def transaction(self):
-        @contextlib.contextmanager
-        def dummy():
             yield
-
-        return dummy()
 
     def generate(self, item, transaction):
         raise NotImplementedError()
