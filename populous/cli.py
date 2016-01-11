@@ -100,4 +100,10 @@ def generators():
         generator = getattr(generators, name)
 
         if isinstance(generator, type) and issubclass(generator, base):
-            click.echo(generator.__name__)
+            name = generator.__name__
+            doc = (generator.__doc__ or '').strip()
+
+            if doc:
+                click.echo("{} - {}".format(name, doc))
+            else:
+                click.echo(name)
