@@ -7,7 +7,9 @@ from .foreignkey import ForeignKey
 from .autoincrement import AutoIncrement
 from .boolean import Boolean
 from .integer import Integer
+from .uuid import UUID
 
 
 __all__ = ['Generator', 'Choices', 'DateTime', 'Date', 'Time', 'Text',
-           'Value', 'ForeignKey', 'AutoIncrement', 'Boolean', 'Integer']
+           'Value', 'ForeignKey', 'AutoIncrement', 'Boolean', 'Integer',
+           'UUID']
