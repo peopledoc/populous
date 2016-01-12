@@ -5,7 +5,8 @@ from .date import DateTime, Date, Time
 from .value import Value
 from .foreignkey import ForeignKey
 from .autoincrement import AutoIncrement
+from .boolean import Boolean
 
 
 __all__ = ['Generator', 'Choices', 'DateTime', 'Date', 'Time', 'Text',
-           'Value', 'ForeignKey', 'AutoIncrement']
+           'Value', 'ForeignKey', 'AutoIncrement', 'Boolean']
