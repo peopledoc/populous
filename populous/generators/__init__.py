@@ -6,7 +6,8 @@ from .value import Value
 from .foreignkey import ForeignKey
 from .autoincrement import AutoIncrement
 from .boolean import Boolean
+from .integer import Integer
 
 
 __all__ = ['Generator', 'Choices', 'DateTime', 'Date', 'Time', 'Text',
-           'Value', 'ForeignKey', 'AutoIncrement', 'Boolean']
+           'Value', 'ForeignKey', 'AutoIncrement', 'Boolean', 'Integer']
