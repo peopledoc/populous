@@ -7,9 +7,9 @@ from .blueprint import Blueprint
 from .exceptions import ValidationError, YAMLError, BackendError
 
 
-def get_blueprint(*files):
+def get_blueprint(files, **kwargs):
     try:
-        return Blueprint.from_description(load_yaml(*files))
+        return Blueprint.from_description(load_yaml(*files), **kwargs)
     except (YAMLError, ValidationError) as e:
         raise click.ClickException(e.message)
     except Exception as e:
@@ -29,8 +29,6 @@ def run():
 
 
 def _generic_run(modulename, classname, files, **kwargs):
-    blueprint = get_blueprint(*files)
-
     try:
         try:
             module = importlib.import_module('.' + modulename,
@@ -40,6 +38,7 @@ def _generic_run(modulename, classname, files, **kwargs):
             click.ClickException("Backend not found.")
 
         backend = backend_cls(**kwargs)
+        blueprint = get_blueprint(files, backend=backend)
 
         try:
             with backend.transaction() as trans:

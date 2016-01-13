@@ -12,18 +12,20 @@ FIELD_ATTRIBUTES = ('name', 'generator')
 
 class Blueprint(object):
 
-    def __init__(self, items=None):
+    def __init__(self, items=None, backend=None):
         self._items = {}
         self.items = items or {}
 
+        self.backend = backend
+
     @classmethod
-    def from_description(cls, description):
+    def from_description(cls, description, **kwargs):
         if not isinstance(description, dict):
             raise ValidationError("You must describe the items as a "
                                   "dictionary (got: {})"
                                   .format(type(description)))
 
-        blueprint = cls()
+        blueprint = cls(**kwargs)
 
         def _load_item(name, attrs):
                 try:
@@ -127,6 +129,14 @@ class Item(namedtuple('Item', ITEM_ATTRIBUTES)):
         for i in xrange(self.total):
             yield tuple(next(value) for value in values)
 
+    def get_field(self, name):
+        for field in self.fields:
+            if field.name == name:
+                return field
+        else:
+            raise KeyError("Field {} not found in blueprint item {}"
+                           .format(name, self.name))
+
 
 class Count(namedtuple('Count', COUNT_ATTRIBUTES)):
     __slots__ = ()
@@ -196,7 +206,7 @@ class Field(namedtuple('Field', FIELD_ATTRIBUTES)):
 
         # TODO: Validate params
         generator = generator_cls(
-            blueprint=blueprint, item_name=item_name, **params
+            blueprint=blueprint, item_name=item_name, field_name=name, **params
         )
 
         return cls(name=name, generator=generator)

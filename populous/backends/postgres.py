@@ -56,6 +56,13 @@ class Postgres(Backend):
 
             yield size
 
+    def get_max_existing_value(self, item, field):
+        with self.conn.cursor() as cursor:
+            cursor.execute("SELECT max({}) FROM {}".format(
+                field, item.table
+            ))
+            return cursor.fetchone()[0]
+
     def close(self):
         if not self.closed:
             try:

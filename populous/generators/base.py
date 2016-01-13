@@ -8,9 +8,11 @@ fake = Factory.create()
 
 
 class Generator(object):
-    def __init__(self, blueprint=None, item_name=None, nullable=False):
+    def __init__(self, blueprint=None, item_name=None, field_name=None,
+                 nullable=False):
         self.blueprint = blueprint
         self.item_name = item_name
+        self.field_name = field_name
 
         if not nullable:
             self.nullable = 0

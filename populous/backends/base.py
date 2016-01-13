@@ -13,6 +13,9 @@ class Backend(object):
     def generate(self, item, transaction):
         raise NotImplementedError()
 
+    def get_max_existing_value(self, item):
+        return None
+
     def close(self):
         self.closed = True
 
