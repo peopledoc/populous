@@ -12,18 +12,20 @@ FIELD_ATTRIBUTES = ('name', 'generator')
 
 class Blueprint(object):
 
-    def __init__(self, items=None):
+    def __init__(self, items=None, backend=None):
         self._items = {}
         self.items = items or {}
 
+        self.backend = backend
+
     @classmethod
-    def from_description(cls, description):
+    def from_description(cls, description, **kwargs):
         if not isinstance(description, dict):
             raise ValidationError("You must describe the items as a "
                                   "dictionary (got: {})"
                                   .format(type(description)))
 
-        blueprint = cls()
+        blueprint = cls(**kwargs)
 
         def _load_item(name, attrs):
                 try:
