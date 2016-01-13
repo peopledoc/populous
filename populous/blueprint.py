@@ -198,7 +198,7 @@ class Field(namedtuple('Field', FIELD_ATTRIBUTES)):
 
         # TODO: Validate params
         generator = generator_cls(
-            blueprint=blueprint, item_name=item_name, **params
+            blueprint=blueprint, item_name=item_name, field_name=name, **params
         )
 
         return cls(name=name, generator=generator)
