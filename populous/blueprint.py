@@ -129,6 +129,14 @@ class Item(namedtuple('Item', ITEM_ATTRIBUTES)):
         for i in xrange(self.total):
             yield tuple(next(value) for value in values)
 
+    def get_field(self, name):
+        for field in self.fields:
+            if field.name == name:
+                return field
+        else:
+            raise KeyError("Field {} not found in blueprint item {}"
+                           .format(name, self.name))
+
 
 class Count(namedtuple('Count', COUNT_ATTRIBUTES)):
     __slots__ = ()
