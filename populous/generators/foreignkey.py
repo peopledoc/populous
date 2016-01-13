@@ -16,16 +16,19 @@ class ForeignKey(Generator):
 
     def generate(self):
         target = self.blueprint[self.target]
+        field = target.get_field(self.field)
+
+        start = field.generator.start
+        stop = start + target.total
 
         if self.item.count.by == self.target:
             pks = chain.from_iterable(
                 repeat(pk, self.item.count.number)
-                for pk in xrange(0, target.total)
+                for pk in xrange(start, stop)
             )
 
             for pk in pks:
                 yield pk
         else:
             while True:
-                # TODO: Support other types than AutoIncrement
-                yield random.randint(0, target.total - 1)
+                yield random.randint(start,  stop - 1)
