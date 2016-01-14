@@ -76,7 +76,7 @@ def predict(files):
     """
     Predict how many objects will be created if the given files are used.
     """
-    blueprint = get_blueprint(*files)
+    blueprint = get_blueprint(files)
 
     for item in blueprint:
         click.echo("{name}: {count} {by}".format(
