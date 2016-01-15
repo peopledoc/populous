@@ -13,7 +13,7 @@ class Backend(object):
     def generate(self, item, transaction):
         raise NotImplementedError()
 
-    def get_max_existing_value(self, item):
+    def get_next_pk(self, item, field):
         return None
 
     def close(self):

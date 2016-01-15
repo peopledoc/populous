@@ -42,7 +42,7 @@ class Postgres(Backend):
         for size, batch in batches(item.generate(), item.total):
             stmt = "INSERT INTO {} ({}) VALUES {}".format(
                 item.table,
-                ", ".join(field.name for field in item.fields),
+                ", ".join(item.fields.keys()),
                 ", ".join("({})".format(
                     ", ".join("%s" for _ in xrange(len(item.fields)))
                 ) for _ in xrange(size))
@@ -56,12 +56,19 @@ class Postgres(Backend):
 
             yield size
 
-    def get_max_existing_value(self, item, field):
+    def get_next_pk(self, item, field):
         with self.conn.cursor() as cursor:
-            cursor.execute("SELECT max({}) FROM {}".format(
-                field, item.table
-            ))
-            return cursor.fetchone()[0]
+            cursor.execute(
+                "SELECT nextval(pg_get_serial_sequence(%s, %s))",
+                (item.table, field)
+            )
+            next_pk = cursor.fetchone()[0]
+            # reset the counter to avoid holes
+            cursor.execute(
+                "SELECT setval(pg_get_serial_sequence(%s, %s), %s, false)",
+                (item.table, field, next_pk)
+            )
+            return next_pk
 
     def close(self):
         if not self.closed:

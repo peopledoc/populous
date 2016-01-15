@@ -2,26 +2,18 @@ import random
 
 from faker import Factory
 
-from cached_property import cached_property
-
 fake = Factory.create()
 
 
 class Generator(object):
-    def __init__(self, blueprint=None, item_name=None, field_name=None,
-                 nullable=False):
-        self.blueprint = blueprint
-        self.item_name = item_name
-        self.field_name = field_name
+    def __init__(self, item, nullable=False):
+        self.item = item
+        self.blueprint = item.blueprint
 
         if not nullable:
             self.nullable = 0
         else:
             self.nullable = 0.5 if nullable is True else nullable
-
-    @cached_property
-    def item(self):
-        return self.blueprint[self.item_name]
 
     def __call__(self):
         if self.nullable:
