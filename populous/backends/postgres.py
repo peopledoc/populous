@@ -42,7 +42,7 @@ class Postgres(Backend):
         for size, batch in batches(item.generate(), item.total):
             stmt = "INSERT INTO {} ({}) VALUES {}".format(
                 item.table,
-                ", ".join(field.name for field in item.fields),
+                ", ".join(item.fields.keys()),
                 ", ".join("({})".format(
                     ", ".join("%s" for _ in xrange(len(item.fields)))
                 ) for _ in xrange(size))
