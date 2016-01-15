@@ -9,7 +9,7 @@ class Integer(Generator):
         super(Integer, self).__init__(**kwargs)
 
         self.min = min
-        self.stop = max
+        self.max = max
 
     def generate(self):
         while True:
