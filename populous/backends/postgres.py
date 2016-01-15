@@ -56,7 +56,7 @@ class Postgres(Backend):
 
             yield size
 
-    def get_max_existing_value(self, item, field):
+    def get_next_pk(self, item, field):
         with self.conn.cursor() as cursor:
             cursor.execute("SELECT max({}) FROM {}".format(
                 field, item.table
