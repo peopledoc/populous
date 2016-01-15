@@ -60,6 +60,10 @@ class Blueprint(object):
         self._items = items
         self.check_circular_dependencies()
 
+        # now that all the items are loaded, we can instantiate the generators
+        for item in items.values():
+            item.load_generators()
+
     def check_circular_dependencies(self):
 
         def _check_ancestors(current, ancestors):
@@ -108,11 +112,47 @@ class Item(namedtuple('Item', ITEM_ATTRIBUTES)):
             name=name,
             table=table,
             count=Count.load(count),
-            fields=tuple(Field.load(blueprint, name, field, desc)
-                         for field, desc in fields.items()
-                         if desc),
+            fields={field: cls.load_field(desc)
+                    for field, desc in fields.items() if desc},
             blueprint=blueprint,
         )
+
+    @classmethod
+    def load_field(cls, attrs):
+        if not isinstance(attrs, dict):
+            raise ValidationError("A field description must be a dictionary "
+                                  "(got: {})".format(type(attrs)))
+
+        generator_cls = attrs.pop('generator', None)
+
+        if not isinstance(generator_cls, str):
+            raise ValidationError("The generator in a field description must "
+                                  "be a string (got: {})"
+                                  .format(type(generator_cls)))
+
+        params = attrs.pop('params', {})
+
+        if not isinstance(params, dict):
+            raise ValidationError("The params of a field generator must be a "
+                                  "dictionary (got: {})".format(type(params)))
+
+        if attrs:
+            raise ValidationError("Field description got unexpected arguments:"
+                                  " {}".format(', '.join(attrs.keys())))
+
+        try:
+            generator_cls = getattr(generators, generator_cls)
+        except AttributeError:
+            raise ValidationError("Generator '{}' not found"
+                                  .format(generator_cls))
+
+        # we do no instantiate the generator right now, as it might
+        # need to see other items during its initialization
+        return (generator_cls, params)
+
+    def load_generators(self):
+        for field, (generator_cls, params) in self.fields.items():
+            self.fields[field] = generator_cls(item=self, **params)
 
     @cached_property
     def total(self):
@@ -170,43 +210,3 @@ class Count(namedtuple('Count', COUNT_ATTRIBUTES)):
                                   ": {}".format(', '.join(attrs.keys())))
 
         return cls(number=number, by=by)
-
-
-class Field(namedtuple('Field', FIELD_ATTRIBUTES)):
-    __slots__ = ()
-
-    @classmethod
-    def load(cls, blueprint, item_name, name, attrs):
-        if not isinstance(attrs, dict):
-            raise ValidationError("A field description must be a dictionary "
-                                  "(got: {})".format(type(attrs)))
-
-        generator_cls = attrs.pop('generator', None)
-
-        if not isinstance(generator_cls, str):
-            raise ValidationError("The generator in a field description must "
-                                  "be a string (got: {})"
-                                  .format(type(generator_cls)))
-
-        params = attrs.pop('params', {})
-
-        if not isinstance(params, dict):
-            raise ValidationError("The params of a field generator must be a "
-                                  "dictionary (got: {})".format(type(params)))
-
-        if attrs:
-            raise ValidationError("Field descrption got unexpected arguments: "
-                                  "{}".format(', '.join(attrs.keys())))
-
-        try:
-            generator_cls = getattr(generators, generator_cls)
-        except AttributeError:
-            raise ValidationError("Generator '{}' not found"
-                                  .format(generator_cls))
-
-        # TODO: Validate params
-        generator = generator_cls(
-            blueprint=blueprint, item_name=item_name, field_name=name, **params
-        )
-
-        return cls(name=name, generator=generator)
