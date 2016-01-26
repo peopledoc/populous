@@ -35,7 +35,7 @@ def _generic_run(modulename, classname, files, **kwargs):
                                              package='populous.backends')
             backend_cls = getattr(module, classname)
         except (ImportError, AttributeError):
-            click.ClickException("Backend not found.")
+            raise click.ClickException("Backend not found.")
 
         backend = backend_cls(**kwargs)
         blueprint = get_blueprint(files, backend=backend)
