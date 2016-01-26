@@ -1,3 +1,5 @@
+import sys
+
 from setuptools import setup, find_packages
 
 import populous
@@ -7,6 +9,9 @@ requirements = [
     "cached-property",
     "fake-factory",
 ]
+
+if sys.version_info < (3, 2):
+    requirements.append('functools32')
 
 setup(
     name="populous",

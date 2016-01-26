@@ -1,6 +1,12 @@
+import random
 import contextlib
 
 from itertools import islice
+
+try:
+    from functools import lru_cache
+except ImportError:
+    from functools32 import lru_cache
 
 from populous.exceptions import BackendError
 from .base import Backend
@@ -69,6 +75,35 @@ class Postgres(Backend):
                 (item.table, field, next_pk)
             )
             return next_pk
+
+    @lru_cache()
+    def count(self, table, where=None):
+        with self.conn.cursor() as cursor:
+            cursor.execute("SELECT count(*) FROM {table} {where}".format(
+                table=table,
+                where="WHERE ({})".format(where) if where else '',
+            ))
+            return cursor.fetchone()[0]
+
+    def select_random(self, table, fields=None, where=None, max_rows=1000):
+        with self.conn.cursor() as cursor:
+            count = self.count(table, where=where)
+
+            cursor.execute(
+                "SELECT {fields} FROM {table} "
+                "WHERE random() < {proportion} {extra_where} {limit}"
+                .format(
+                    table=table,
+                    fields=', '.join(fields),
+                    proportion=min(max_rows / float(count), 1.0),
+                    extra_where="AND ({})".format(where) if where else '',
+                    limit="LIMIT {}".format(max_rows)
+                )
+            )
+
+            results = cursor.fetchall()
+            random.shuffle(results)
+            return results
 
     def close(self):
         if not self.closed:

@@ -7,7 +7,8 @@ from .foreignkey import ForeignKey
 from .boolean import Boolean
 from .integer import Integer
 from .uuid import UUID
+from .select import Select
 
 
 __all__ = ['Generator', 'Choices', 'DateTime', 'Date', 'Time', 'Text',
-           'Value', 'ForeignKey', 'Boolean', 'Integer', 'UUID']
+           'Value', 'ForeignKey', 'Boolean', 'Integer', 'UUID', 'Select']
