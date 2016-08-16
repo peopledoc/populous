@@ -2,10 +2,6 @@ world: &world
   table: demo_world
   count: 0
   fields:
-    id:
-      generator: AutoIncrement
-      params:
-        nullable: false
     name:
       generator: Text
       params:
@@ -23,10 +19,6 @@ city: &city
   table: demo_city
   count: 0
   fields:
-    id:
-      generator: AutoIncrement
-      params:
-        nullable: false
     world_id:
       generator: ForeignKey
       params:
@@ -44,17 +36,13 @@ abode: &abode
   table: demo_abode
   count: 0
   fields:
-    id:
-      generator: AutoIncrement
-      params:
-        nullable: false
     city_id:
       generator: ForeignKey
       params:
         nullable: false
         target: city
         field: id
-    owner:
+    owner_id:
       generator: ForeignKey
       params:
         nullable: true
@@ -71,10 +59,6 @@ citizen: &citizen
   table: demo_citizen
   count: 0
   fields:
-    id:
-      generator: AutoIncrement
-      params:
-        nullable: false
     abode_id:
       generator: ForeignKey
       params:
@@ -113,10 +97,6 @@ hobby: &hobby
   table: demo_hobby
   count: 0
   fields:
-    id:
-      generator: AutoIncrement
-      params:
-        nullable: false
     name:
       generator: Text
       params:
@@ -128,10 +108,6 @@ hobby_citizens_through_table: &hobby_citizens_through_table
   table: demo_hobby_citizens
   count: 0
   fields:
-    id:
-      generator: AutoIncrement
-      params:
-        nullable: false
     hobby_id:
       generator: ForeignKey
       params:
