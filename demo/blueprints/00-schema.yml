@@ -1,0 +1,100 @@
+items:
+  - name: world
+    table: demo_world
+    count: 0
+    fields:
+      name:
+        generator: Text
+        nullable: false
+        min_length: 1
+        max_length: 30
+      description:
+        generator: Text
+        nullable: false
+        min_length: 0
+        max_length: null
+
+  - name: city
+    table: demo_city
+    count: 0
+    fields:
+      world_id: $world.id
+      name:
+        generator: Text
+        nullable: false
+        min_length: 1
+        max_length: 40
+
+  - name: abode
+    table: demo_abode
+    count:
+      by: city
+    fields:
+      city_id: $city.id
+      owner_id: null  # handled with a side-effect
+      type:
+        generator: Choices
+        nullable: false
+        choices: ['SH', 'H', 'SB', 'B']
+
+  - name: citizen
+    table: demo_citizen
+    count: 0
+    fields:
+      abode_id: $abode.id
+      first_name:
+        generator: Text
+        nullable: false
+        min_length: 1
+        max_length: 20
+      middle_name:
+        generator: Text
+        nullable: false
+        min_length: 0
+        max_length: 20
+      last_name:
+        generator: Text
+        nullable: false
+        min_length: 1
+        max_length: 20
+      birth:
+        generator: Date
+        nullable: false
+      gender:
+        generator: Choices
+        nullable: false
+        choices: ['M', 'F']
+
+  # TODO
+  # - name: owner
+  #   parent: citizen
+  #   count:
+  #     number: 1
+  #     by: abode
+  #   side_effect:
+  #     abode.owner_id: this.id
+
+  - name: hobby
+    table: demo_hobby
+    count: 0
+    fields:
+      name:
+        generator: Text
+        nullable: false
+        min_length: 1
+        max_length: 40
+
+  - name: hobby_citizens_through_table
+    table: demo_hobby_citizens
+    count: 0
+    fields:
+      hobby_id:
+        generator: ForeignKey
+        nullable: false
+        target: hobby
+        field: id
+      citizen_id:
+        generator: ForeignKey
+        nullable: false
+        target: citizen
+        field: id
