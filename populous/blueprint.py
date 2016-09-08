@@ -1,204 +1,107 @@
-from collections import namedtuple
-
-from cached_property import cached_property
-
-from populous import generators
 from populous.exceptions import ValidationError
-
-ITEM_ATTRIBUTES = ('name', 'table', 'count', 'fields', 'blueprint')
-COUNT_ATTRIBUTES = ('number', 'by')
-FIELD_ATTRIBUTES = ('name', 'generator')
+from populous.item import Item, COUNT_KEYS, ITEM_KEYS
 
 
 class Blueprint(object):
 
-    def __init__(self, items=None, backend=None):
-        self._items = {}
+    def __init__(self, items=None, vars_=None, backend=None):
         self.items = items or {}
-
+        self.vars = vars_ or {}
         self.backend = backend
 
-    @classmethod
-    def from_description(cls, description, **kwargs):
+    def add_var(self, name, value):
+        self.vars[name] = value
+
+    def add_item(self, description):
         if not isinstance(description, dict):
-            raise ValidationError("You must describe the items as a "
-                                  "dictionary (got: {})"
-                                  .format(type(description)))
+            raise ValidationError(
+                "A blueprint item must be a dict, not a {}"
+                .format(type(description))
+            )
 
-        blueprint = cls(**kwargs)
+        if any(key not in ITEM_KEYS for key in description.keys()):
+            extra = set(description.keys()) - set(ITEM_KEYS)
+            raise ValidationError(
+                "Unknown key(s) '{}'. Possible keys are '{}'."
+                .format(', '.join(extra), ', '.join(ITEM_KEYS))
+            )
 
-        def _load_item(name, attrs):
-                try:
-                    return Item.load(blueprint, name, attrs)
-                except ValidationError as e:
-                    raise ValidationError("Error loading item '{}': {}"
-                                          .format(name, e))
+        name = description.pop('name', None)
+        parent = None
+        if name and name in self.items:
+            # this item already exists, this mean we are trying
+            # to override it
+            if description.get('parent', name) != name:
+                raise ValidationError(
+                    "Re-defining item '{}' while setting '{}' as parent "
+                    "is ambiguous.".format(name, description['parent'])
+                )
+            description['parent'] = name
 
-        blueprint.items = {
-            name: _load_item(name, attrs)
-            for name, attrs in description.items()
-        }
-        return blueprint
+        if description.get('parent'):
+            parent_name = description['parent']
+            if parent_name not in self.items:
+                raise ValidationError(
+                    "Parent '{}' does not exist.".format(parent_name)
+                )
+            parent = self.items[parent_name]
+            if not name:
+                name = parent.name
 
-    def __iter__(self):
-        for item in self.items.values():
-            yield item
-
-    def __getitem__(self, key):
-        try:
-            return self.items[key]
-        except KeyError:
-            raise ValidationError("The item '{}' was not found in the "
-                                  "blueprint".format(key))
-
-    @property
-    def items(self):
-        return self._items
-
-    @items.setter
-    def items(self, items):
-        self._items = items
-        self.check_circular_dependencies()
-
-        # now that all the items are loaded, we can instantiate the generators
-        for item in items.values():
-            item.load_generators()
-
-    def check_circular_dependencies(self):
-
-        def _check_ancestors(current, ancestors):
-            parent = current.count.by
-
-            if not parent:
-                return
-
-            if parent in ancestors:
-                raise ValueError("Circular dependency between {} and {}"
-                                 .format(current.name, parent))
-
-            ancestors.add(current.name)
-            _check_ancestors(self[parent], ancestors)
-
-        for item in self:
-            _check_ancestors(item, set())
-
-
-class Item(namedtuple('Item', ITEM_ATTRIBUTES)):
-
-    @classmethod
-    def load(cls, blueprint, name, attrs):
-        if not isinstance(attrs, dict):
-            raise ValidationError("Blueprint items must be dictionaries "
-                                  "(got: {})".format(type(attrs)))
-
-        table = attrs.pop('table', None)
-
-        if not table:
-            raise ValidationError("Blueprint items must have a table")
-
-        fields = attrs.pop('fields', {})
-
-        if not isinstance(fields, dict):
-            raise ValidationError("Fields description must be a dictionary "
-                                  "(got: {})".format(type(fields)))
-
-        count = attrs.pop('count', 0)
-
-        if attrs:
-            raise ValidationError("Blueprint item got unexpected arguments: {}"
-                                  .format(', '.join(attrs.keys())))
-
-        return cls(
-            name=name,
-            table=table,
-            count=Count.load(count),
-            fields={field: cls.load_field(desc)
-                    for field, desc in fields.items() if desc},
-            blueprint=blueprint,
+        item = Item(
+            blueprint=self, name=name, table=description.get('table'),
+            parent=parent
         )
 
-    @classmethod
-    def load_field(cls, attrs):
-        if not isinstance(attrs, dict):
-            raise ValidationError("A field description must be a dictionary "
-                                  "(got: {})".format(type(attrs)))
+        fields = description.get('fields', {})
+        if not isinstance(fields, dict):
+            raise ValidationError(
+                "Fields must be a dict, not a {}".format(type(fields))
+            )
+        for field_name, attrs in fields.items():
+            if isinstance(attrs, dict):
+                generator = attrs.pop('generator', None)
+                if not generator:
+                    raise ValidationError(
+                        "Field '{}' in item '{}' must either be a value, or "
+                        "a dict with a 'generator' key."
+                        .format(field_name, name)
+                    )
+                params = attrs
+            else:
+                # If we didn't get a dict, this is a fixed value
+                generator = 'Value'
+                params = {'value': attrs}
 
-        generator_cls = attrs.pop('generator', None)
+            item.add_field(field_name, generator, **params)
 
-        if not isinstance(generator_cls, str):
-            raise ValidationError("The generator in a field description must "
-                                  "be a string (got: {})"
-                                  .format(type(generator_cls)))
-
-        params = attrs.pop('params', {})
-
-        if not isinstance(params, dict):
-            raise ValidationError("The params of a field generator must be a "
-                                  "dictionary (got: {})".format(type(params)))
-
-        if attrs:
-            raise ValidationError("Field description got unexpected arguments:"
-                                  " {}".format(', '.join(attrs.keys())))
-
-        try:
-            generator_cls = getattr(generators, generator_cls)
-        except AttributeError:
-            raise ValidationError("Generator '{}' not found"
-                                  .format(generator_cls))
-
-        # we do no instantiate the generator right now, as it might
-        # need to see other items during its initialization
-        return (generator_cls, params)
-
-    def load_generators(self):
-        for field, (generator_cls, params) in self.fields.items():
-            self.fields[field] = generator_cls(item=self, **params)
-
-    @cached_property
-    def total(self):
-        by = self.count.by
-
-        if not by:
-            return self.count.number
+        count = description.get('count') or 0
+        if isinstance(count, int):
+            item.add_count(number=count)
         else:
-            return self.blueprint[by].total * self.count.number
+            if not isinstance(count, dict):
+                raise ValidationError(
+                    "The count of item '{}' must be an integer or a dict."
+                    .format(name)
+                )
 
-    def generate(self):
-        generators = tuple(generator() for generator in self.fields.values())
+            if any(key not in COUNT_KEYS for key in count.keys()):
+                extra = set(count.keys()) - set(COUNT_KEYS)
+                raise ValidationError(
+                    "Unknown key(s) '{}' in count of item '{}'. Possible "
+                    "keys are '{}'."
+                    .format(', '.join(extra), name, ', '.join(COUNT_KEYS))
+                )
 
-        for i in xrange(self.total):
-            yield tuple(next(generator) for generator in generators)
+            item.add_count(**count)
 
+        self.items[name] = item
 
-class Count(namedtuple('Count', COUNT_ATTRIBUTES)):
-    __slots__ = ()
+    def generate(self, buffer):
+        for item in self.items.values():
+            if item.count.by:
+                # we only create the items with no dependency,
+                # the others will be created on the fly
+                continue
 
-    @classmethod
-    def load(cls, attrs):
-        if isinstance(attrs, int):
-            attrs = {'number': attrs}
-        elif not isinstance(attrs, dict):
-            raise ValidationError("The 'count' attribute must be either an "
-                                  "integer or a dictionary (got: {})"
-                                  .format(type(attrs)))
-
-        number = attrs.pop('number', 0)
-
-        if not isinstance(number, int):
-            raise ValidationError("A count must be an integer (got: {})"
-                                  .format(type(number)))
-        elif number < 0:
-            raise ValidationError("A count must be a positive number (got: {})"
-                                  .format(number))
-
-        by = attrs.pop('by', None)
-
-        if by is not None and not isinstance(by, str):
-            raise ValidationError("The 'by' attribute of 'count' must be a "
-                                  "string (got: {})".format(type(by)))
-
-        if attrs:
-            raise ValidationError("'count' attribute got unexpected arguments"
-                                  ": {}".format(', '.join(attrs.keys())))
-
-        return cls(number=number, by=by)
+            item.generate(buffer)
