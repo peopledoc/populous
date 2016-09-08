@@ -8,10 +8,10 @@ class Backend(object):
 
     @contextlib.contextmanager
     def transaction(self):
-            yield
+        yield
 
-    def generate(self, item, transaction):
-        raise NotImplementedError()
+    def write(self, item, objs):
+        pass
 
     def get_next_pk(self, item, field):
         return None
