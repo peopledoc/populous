@@ -1,0 +1,21 @@
+items:
+  - name: world
+    parent: world
+    count: 5
+
+  - name: city
+    parent: city
+    count:
+      number: 10
+      by: world
+
+  - name: abode
+    parent: abode
+    count:
+      number: 100
+      by: city
+
+  - name: citizen
+    count:
+      number: 2
+      by: abode

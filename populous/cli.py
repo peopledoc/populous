@@ -2,14 +2,14 @@ import importlib
 
 import click
 
-from .loader import load_yaml
-from .blueprint import Blueprint
+from .buffer import Buffer
+from .loader import load_blueprint
 from .exceptions import ValidationError, YAMLError, BackendError
 
 
 def get_blueprint(files, **kwargs):
     try:
-        return Blueprint.from_description(load_yaml(*files), **kwargs)
+        return load_blueprint(*files, **kwargs)
     except (YAMLError, ValidationError) as e:
         raise click.ClickException(e.message)
     except Exception as e:
@@ -39,18 +39,13 @@ def _generic_run(modulename, classname, files, **kwargs):
 
         backend = backend_cls(**kwargs)
         blueprint = get_blueprint(files, backend=backend)
+        buffer = Buffer(blueprint)
 
         try:
-            with backend.transaction() as trans:
-                for item in blueprint:
-                    if not item.total:
-                        continue
-
-                    label = 'Creating {} {}'.format(item.total, item.name)
-                    with click.progressbar(label=label,
-                                           length=item.total) as bar:
-                        for progress in backend.generate(item, trans):
-                            bar.update(progress)
+            with backend.transaction():
+                blueprint.generate(buffer)
+                # write everything left in the buffer
+                buffer.clear()
         finally:
             backend.close()
 
@@ -78,7 +73,7 @@ def predict(files):
     """
     blueprint = get_blueprint(files)
 
-    for item in blueprint:
+    for item in blueprint.items.values():
         click.echo("{name}: {count} {by}".format(
             name=item.name, count=item.total,
             by="({} by {})".format(item.count.number, item.count.by)

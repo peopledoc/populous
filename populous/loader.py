@@ -1,87 +1,71 @@
-import collections
-
 import yaml
 
+from .blueprint import Blueprint
+from .exceptions import ValidationError
 from .exceptions import YAMLError
 
 
-def load_yaml(*filenames):
-    """
-    Parse the given files as if they were a single YAML file.
-    """
-    with ChainedFileObject(*filenames) as f:
+BLUEPRINT_KEYS = ('items', 'vars')
+
+
+def load_blueprint(*filenames, **kwargs):
+    blueprint = Blueprint(**kwargs)
+
+    for filename in filenames:
+        content = _get_yaml(filename)
+        try:
+            _load_content(blueprint, content)
+        except ValidationError as e:
+            e.filename = filename
+            raise e
+
+    return blueprint
+
+
+def _get_yaml(filename):
+    with open(filename) as f:
         try:
             return yaml.load(f)
         except yaml.YAMLError as e:
-            raise YAMLError(
-                f.current.name if f.current else '<file>',
-                e.problem
-            )
+            raise YAMLError(filename, str(e))
 
 
-class ChainedFileObject(object):
-    """
-    A file-like object behaving like if all the given filenames were a single
-    file.
+def _load_content(blueprint, content):
+    if not content:
+        return
 
-    Note that you never get content from several files during a single call to
-    ``read``, even if the length of the requested buffer if longer that the
-    remaining bytes in the current file. You have to call ``read`` again in
-    order to get content from the next file.
+    if not isinstance(content, dict):
+        raise ValidationError(
+            "The blueprint must be a dict containing the keys 'vars' and "
+            "'items'. Got a {}.".format(type(content))
+        )
 
-    Can be used as a context manager (in a ``with`` statement).
+    if any(key not in BLUEPRINT_KEYS for key in content.keys()):
+        extra = set(content.keys()) - set(BLUEPRINT_KEYS)
+        raise ValidationError(
+            "Unknown key(s) in buleprint '{}'. Possible keys are '{}'."
+            .format(', '.join(extra), ', '.join(BLUEPRINT_KEYS))
+        )
 
-    Example::
-        >>> f = ChainedFileObject('foo.txt', 'bar.txt')
-        >>> f.read()
-        "I'm the content of foo.txt"
-        >>> f.read(1024)
-        "I'm the content of bar.txt"
-        >>> f.read()
-        ''
-        >>> f.close()
-    """
+    _load_vars(blueprint, content.get('vars', {}))
+    _load_items(blueprint, content.get('items', ()))
 
-    def __init__(self, *filenames):
-        self.filenames = collections.deque(filenames)
-        self.current = None
 
-        self.nextfile()
+def _load_vars(blueprint, vars_):
+    if not isinstance(vars_, dict):
+        raise ValidationError(
+            "Blueprint vars must be a dict, not a {}.".format(type(vars_))
+        )
 
-    def __enter__(self):
-        return self
+    for name, value in vars_.items():
+        blueprint.add_var(name, value)
 
-    def __exit__(self, *args):
-        return self.close()
 
-    def nextfile(self):
-        current = self.current
-        self.current = None
+def _load_items(blueprint, items):
+    if not isinstance(items, list):
+        raise ValidationError(
+            "Blueprint items must be in a list, not a {}.".format(type(items))
+        )
 
-        try:
-            if current:
-                current.close()
-        finally:
-            try:
-                self.current = open(self.filenames.popleft())
-            except IndexError:
-                self.current = None
-
-    def read(self, n=None):
-        if not self.current:
-            return ''
-
-        output = self.current.read()
-
-        if not output:
-            self.nextfile()
-            return self.read()
-
-        return output
-
-    def close(self):
-        current = self.current
-        self.current = None
-
-        if current:
-            current.close()
+    for item in items:
+        blueprint.add_item(item)

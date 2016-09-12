@@ -1,8 +1,6 @@
 import random
 import contextlib
 
-from itertools import islice
-
 try:
     from functools import lru_cache
 except ImportError:
@@ -18,20 +16,11 @@ except ImportError:
                        "Postgresql backend")
 
 
-BATCH_SIZE = 10000
-
-
-def batches(generator, length):
-    for _ in xrange(length // BATCH_SIZE):
-        yield BATCH_SIZE, islice(generator, BATCH_SIZE)
-
-    if length % BATCH_SIZE:
-        yield length % BATCH_SIZE, islice(generator, BATCH_SIZE)
-
-
 class Postgres(Backend):
     def __init__(self, *args, **kwargs):
         super(Postgres, self).__init__(*args, **kwargs)
+
+        self._current_cursor = None
 
         try:
             self.conn = psycopg2.connect(**kwargs)
@@ -39,31 +28,41 @@ class Postgres(Backend):
             raise BackendError("Error connecting to Postgresql DB: {}"
                                .format(e))
 
+    @property
+    @contextlib.contextmanager
+    def cursor(self):
+        if self._current_cursor:
+            yield self._current_cursor
+        else:
+            with self.conn.cursor() as cursor:
+                yield cursor
+
     @contextlib.contextmanager
     def transaction(self):
         with self.conn:
-            yield self.conn.cursor()
+            with self.conn.cursor() as cursor:
+                self._current_cursor = cursor
+                yield cursor
+                self._current_cursor = None
 
-    def generate(self, item, cursor):
-        for size, batch in batches(item.generate(), item.total):
+    def write(self, item, objs):
+        with self.cursor as cursor:
             stmt = "INSERT INTO {} ({}) VALUES {}".format(
                 item.table,
-                ", ".join(item.fields.keys()),
+                ", ".join(item.db_fields),
                 ", ".join("({})".format(
-                    ", ".join("%s" for _ in xrange(len(item.fields)))
-                ) for _ in xrange(size))
+                    ", ".join("%s" for _ in xrange(len(item.db_fields)))
+                ) for _ in xrange(len(objs)))
             )
 
             try:
-                cursor.execute(stmt, tuple(v for vs in batch for v in vs))
+                cursor.execute(stmt, tuple(v for vs in objs for v in vs))
             except psycopg2.DatabaseError as e:
                 raise BackendError("Error during the generation of "
                                    "'{}': {}".format(item.name, e.message))
 
-            yield size
-
     def get_next_pk(self, item, field):
-        with self.conn.cursor() as cursor:
+        with self.cursor as cursor:
             cursor.execute(
                 "SELECT nextval(pg_get_serial_sequence(%s, %s))",
                 (item.table, field)
@@ -78,7 +77,7 @@ class Postgres(Backend):
 
     @lru_cache()
     def count(self, table, where=None):
-        with self.conn.cursor() as cursor:
+        with self.cursor as cursor:
             cursor.execute("SELECT count(*) FROM {table} {where}".format(
                 table=table,
                 where="WHERE ({})".format(where) if where else '',
@@ -86,7 +85,7 @@ class Postgres(Backend):
             return cursor.fetchone()[0]
 
     def select_random(self, table, fields=None, where=None, max_rows=1000):
-        with self.conn.cursor() as cursor:
+        with self.cursor as cursor:
             count = self.count(table, where=where)
 
             cursor.execute(
