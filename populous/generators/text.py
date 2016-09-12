@@ -7,8 +7,8 @@ from .base import Generator
 
 class Text(Generator):
 
-    def __init__(self, min_length=0, max_length=None, **kwargs):
-        super(Text, self).__init__(**kwargs)
+    def get_arguments(self, min_length=0, max_length=None, **kwargs):
+        super(Text, self).get_arguments(**kwargs)
 
         self.min_length = min_length or 0
         self.max_length = max_length or 10000

@@ -5,8 +5,8 @@ from .base import Generator
 
 class Integer(Generator):
 
-    def __init__(self, min=0, max=(2 ** 32) - 1, **kwargs):
-        super(Integer, self).__init__(**kwargs)
+    def get_arguments(self, min=0, max=(2 ** 32) - 1, **kwargs):
+        super(Integer, self).get_arguments(**kwargs)
 
         self.min = min
         self.max = max
