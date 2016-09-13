@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from populous.exceptions import ValidationError
 from populous.item import Item, COUNT_KEYS, ITEM_KEYS
 
@@ -5,7 +7,7 @@ from populous.item import Item, COUNT_KEYS, ITEM_KEYS
 class Blueprint(object):
 
     def __init__(self, items=None, vars_=None, backend=None):
-        self.items = items or {}
+        self.items = OrderedDict(items or {})
         self.vars = vars_ or {}
         self.backend = backend
 
