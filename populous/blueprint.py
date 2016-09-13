@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from populous.exceptions import ValidationError
 from populous.item import Item, COUNT_KEYS, ITEM_KEYS
 
@@ -5,7 +7,7 @@ from populous.item import Item, COUNT_KEYS, ITEM_KEYS
 class Blueprint(object):
 
     def __init__(self, items=None, vars_=None, backend=None):
-        self.items = items or {}
+        self.items = OrderedDict(items or {})
         self.vars = vars_ or {}
         self.backend = backend
 
@@ -48,9 +50,17 @@ class Blueprint(object):
             if not name:
                 name = parent.name
 
+        store_in = description.get('store_in')
+        if store_in:
+            if not isinstance(store_in, dict):
+                raise ValidationError(
+                    "'store_in' must be a dict, not a {}"
+                    .format(type(store_in))
+                )
+
         item = Item(
             blueprint=self, name=name, table=description.get('table'),
-            parent=parent
+            parent=parent, store_in=store_in
         )
 
         fields = description.get('fields', {})
