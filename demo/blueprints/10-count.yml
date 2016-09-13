@@ -1,4 +1,7 @@
 items:
+  - name: hobby
+    count: 10
+
   - name: world
     parent: world
     count: 5
@@ -19,3 +22,8 @@ items:
     count:
       number: 2
       by: abode
+
+  - name: hobby_citizens_through_table
+    count:
+      number: 1
+      by: citizen

@@ -1,4 +1,16 @@
 items:
+  - name: hobby
+    table: demo_hobby
+    count: 0
+    store_in:
+      hobbies_ids: $this.id
+    fields:
+      name:
+        generator: Text
+        nullable: false
+        min_length: 1
+        max_length: 40
+
   - name: world
     table: demo_world
     count: 0
@@ -74,27 +86,11 @@ items:
   #   side_effect:
   #     abode.owner_id: this.id
 
-  - name: hobby
-    table: demo_hobby
-    count: 0
-    fields:
-      name:
-        generator: Text
-        nullable: false
-        min_length: 1
-        max_length: 40
-
   - name: hobby_citizens_through_table
     table: demo_hobby_citizens
     count: 0
     fields:
       hobby_id:
-        generator: ForeignKey
-        nullable: false
-        target: hobby
-        field: id
-      citizen_id:
-        generator: ForeignKey
-        nullable: false
-        target: citizen
-        field: id
+        generator: Choices
+        choices: hobbies_ids
+      citizen_id: $citizen.id
