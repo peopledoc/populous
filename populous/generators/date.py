@@ -2,9 +2,11 @@ import random
 from datetime import datetime
 from time import mktime
 
+from dateutil.parser import parse as dateutil_parse
 from dateutil.tz import tzlocal
 
 from .base import Generator
+from .vars import parse_vars
 
 
 def to_timestamp(dt):
@@ -13,13 +15,22 @@ def to_timestamp(dt):
     return mktime(dt.timetuple())
 
 
+def parse_datetime(candidate):
+    if isinstance(candidate, datetime):
+        return candidate
+    return dateutil_parse(candidate)
+
+
 class DateTime(Generator):
 
-    def get_arguments(self, past=True, future=False, **kwargs):
+    def get_arguments(self, past=True, future=False, after=None, before=None,
+                      **kwargs):
         super(DateTime, self).get_arguments(**kwargs)
 
         self.past = past
         self.future = future
+        self.after = parse_vars(after)
+        self.before = parse_vars(before)
 
     def generate(self):
         if not self.past:
@@ -33,6 +44,12 @@ class DateTime(Generator):
             stop = to_timestamp(datetime(2100, 1, 1))
         else:
             stop = to_timestamp(datetime.now())
+
+        if self.before:
+            stop = to_timestamp(parse_datetime(self.evaluate(self.before)))
+
+        if self.after:
+            start = to_timestamp(parse_datetime(self.evaluate(self.after)))
 
         while True:
             yield datetime.fromtimestamp(
