@@ -6,18 +6,20 @@ from cached_property import cached_property
 from populous import generators
 from populous.exceptions import ValidationError
 from populous.factory import ItemFactory
+from populous.generators.vars import parse_vars
 
-ITEM_KEYS = ('name', 'parent', 'table', 'count', 'fields')
+ITEM_KEYS = ('name', 'parent', 'table', 'count', 'fields', 'store_in')
 COUNT_KEYS = ('number', 'by', 'min', 'max')
 
 
 class Item(object):
 
-    def __init__(self, blueprint, name, table, parent=None):
+    def __init__(self, blueprint, name, table, parent=None, store_in=None):
         self.blueprint = blueprint
 
         if parent:
             table = table or parent.table
+            store_in = store_in or parent.store_in
 
         if not name:
             # if any of our parent had a name we would have inherited it
@@ -32,6 +34,16 @@ class Item(object):
         self.table = table
         self.count = None
         self.fields = {}
+
+        if store_in:
+            self.store_in = {
+                name: parse_vars(expression)
+                for name, expression in store_in.items()
+            }
+            for name in self.store_in:
+                self.blueprint.vars.setdefault(name, [])
+        else:
+            self.store_in = {}
 
         self.add_field('id', 'IntegerPrimaryKey')
 
@@ -96,19 +108,26 @@ class Item(object):
 
         self.count = Count(number=number, by=by, min=min, max=max)
 
+    def store_values(self, factory):
+        for name, expression in self.store_in.items():
+            store = self.blueprint.vars[name]
+            store.append(expression.evaluate(**self.blueprint.vars))
+
     def generate(self, buffer):
         dependencies = tuple(item for item in self.blueprint.items.values()
                              if item.count.by == self.name)
 
         for i in xrange(self.count()):
             factory = ItemFactory(self)
+
+            self.blueprint.vars['this'] = factory
             buffer.add(factory.generate())
+            self.store_values(factory)
+            del self.blueprint.vars['this']
 
             self.blueprint.vars[self.name] = factory
-
             for dependency in dependencies:
                 dependency.generate(buffer)
-
             del self.blueprint.vars[self.name]
 
 

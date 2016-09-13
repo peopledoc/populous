@@ -23,12 +23,9 @@ class ItemFactory(object):
                 raise
 
     def generate(self):
-        self.blueprint.vars['this'] = self
-        values = self.item.namedtuple._make(
+        return self.item.namedtuple._make(
             getattr(self, name) for name in self.item.namedtuple._fields
         )
-        del self.blueprint.vars['this']
-        return values
 
     def _get_value(self, name):
         return next(self.item.fields[name])
