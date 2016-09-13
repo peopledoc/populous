@@ -8,6 +8,7 @@ requirements = [
     "click",
     "cached-property",
     "fake-factory",
+    "dateutils"
 ]
 
 if sys.version_info < (3, 2):
