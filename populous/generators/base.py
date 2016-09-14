@@ -61,6 +61,11 @@ class NullableMixin(object):
             self.nullable = 0.5 if nullable is True else nullable
 
     def generate(self):
+        if self.nullable:
+            return self.generate_with_null()
+        return super(NullableMixin, self).generate()
+
+    def generate_with_null(self):
         for value in super(NullableMixin, self).generate():
             if random.random() <= self.nullable:
                 yield None
