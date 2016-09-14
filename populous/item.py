@@ -96,15 +96,15 @@ class Item(object):
                     .format(self.name)
                 )
 
-            # treat None as 0
-            min = min or 0
-            max = max or 0
+        # treat None as 0
+        min = min or 0
+        max = max or 0
 
-            if min > max:
-                raise ValueError(
-                    "Item '{}' count: Min is greater than max."
-                    .format(self.name)
-                )
+        if min > max:
+            raise ValueError(
+                "Item '{}' count: Min is greater than max."
+                .format(self.name)
+            )
 
         self.count = Count(number=number, by=by, min=min, max=max)
 
