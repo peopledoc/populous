@@ -79,19 +79,19 @@ class Item(object):
             if value is None:
                 continue
             if not isinstance(value, int):
-                raise ValueError(
+                raise ValidationError(
                     "Item '{}' count: {} must be an integer (got: '{}')."
                     .format(self.name, key, type(value))
                 )
             if value < 0:
-                raise ValueError(
+                raise ValidationError(
                     "Item '{}' count: {} must be positive."
                     .format(self.name, key)
                 )
 
         if min is not None or max is not None:
             if number is not None:
-                raise ValueError(
+                raise ValidationError(
                     "Item '{}' count: Cannot set 'number' and 'min/max'."
                     .format(self.name)
                 )
@@ -101,7 +101,7 @@ class Item(object):
         max = max or 0
 
         if min > max:
-            raise ValueError(
+            raise ValidationError(
                 "Item '{}' count: Min is greater than max."
                 .format(self.name)
             )
