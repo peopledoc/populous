@@ -8,8 +8,9 @@ from .boolean import Boolean
 from .integer import Integer
 from .uuid import UUID
 from .select import Select
+from .email import Email
 
 
 __all__ = ['BaseGenerator', 'Generator', 'Choices', 'DateTime', 'Date', 'Time',
            'Text', 'Value', 'Boolean', 'Integer', 'UUID',
-           'Select', 'IntegerPrimaryKey']
+           'Select', 'IntegerPrimaryKey', 'Email']
