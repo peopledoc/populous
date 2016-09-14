@@ -76,5 +76,27 @@ class NullableMixin(object):
                 yield value
 
 
-class Generator(NullableMixin, BaseGenerator):
+class UniquenessMixin(object):
+
+    def get_arguments(self, unique=False, **kwargs):
+        super(UniquenessMixin, self).get_arguments(**kwargs)
+
+        self.unique = unique
+
+    def get_generator(self):
+        if self.unique:
+            return self.generate_uniquely()
+        return super(UniquenessMixin, self).get_generator()
+
+    def generate_uniquely(self):
+        seen = set()  # TODO: use a bloom filter instead
+        for value in super(UniquenessMixin, self).get_generator():
+            if value in seen:
+                # TODO: avoid inifinite loops
+                continue
+            seen.add(value)
+            yield value
+
+
+class Generator(NullableMixin, UniquenessMixin, BaseGenerator):
     pass
