@@ -32,7 +32,7 @@ class Item(object):
 
         self.name = name
         self.table = table
-        self.count = None
+        self.count = Count(number=0, by=None, min=None, max=None)
         self.fields = {}
 
         if store_in:
@@ -51,8 +51,7 @@ class Item(object):
             for name, field in parent.fields.items():
                 # TODO: copy
                 self.fields[name] = field
-            self.add_count(parent.count.number, parent.count.by,
-                           parent.count.min, parent.count.max)
+            self.count = parent.count
 
     @cached_property
     def namedtuple(self):
@@ -88,6 +87,16 @@ class Item(object):
                     "Item '{}' count: {} must be positive."
                     .format(self.name, key)
                 )
+
+        current_count = self.count
+        if current_count:
+            # this item already has a count, merge it
+            by = by or current_count.by
+            if min is None and max is None:
+                number = number or current_count.number
+            if number is None:
+                min = min or current_count.min
+                max = max or current_count.max
 
         if min is not None or max is not None:
             if number is not None:

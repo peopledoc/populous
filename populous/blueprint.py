@@ -85,8 +85,10 @@ class Blueprint(object):
 
             item.add_field(field_name, generator, **params)
 
-        count = description.get('count') or 0
-        if isinstance(count, int):
+        count = description.get('count')
+        if count is None:
+            pass
+        elif isinstance(count, int):
             item.add_count(number=count)
         else:
             if not isinstance(count, dict):
