@@ -26,7 +26,10 @@ class BaseGenerator(object):
 
     @cached_property
     def iterator(self):
-        return iter(self.generate())
+        return iter(self.get_generator())
+
+    def get_generator(self):
+        return self.generate()
 
     def generate(self):
         raise NotImplementedError()
@@ -60,13 +63,13 @@ class NullableMixin(object):
         else:
             self.nullable = 0.5 if nullable is True else nullable
 
-    def generate(self):
+    def get_generator(self):
         if self.nullable:
             return self.generate_with_null()
-        return super(NullableMixin, self).generate()
+        return super(NullableMixin, self).get_generator()
 
     def generate_with_null(self):
-        for value in super(NullableMixin, self).generate():
+        for value in super(NullableMixin, self).get_generator():
             if random.random() <= self.nullable:
                 yield None
             else:
