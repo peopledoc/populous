@@ -7,9 +7,9 @@ items:
     fields:
       name:
         generator: Text
-        nullable: false
         min_length: 1
         max_length: 40
+        unique: true
 
   - name: world
     table: demo_world
