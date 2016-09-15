@@ -55,7 +55,10 @@ class Item(object):
 
     @cached_property
     def namedtuple(self):
-        return namedtuple(self.name, self.db_fields)
+        fields = tuple(self.fields.keys())
+        if self.count.by:
+            fields += (self.count.by,)
+        return namedtuple(self.name, fields)
 
     @cached_property
     def db_fields(self):
@@ -122,22 +125,28 @@ class Item(object):
             store = self.blueprint.vars[name]
             store.append(expression.evaluate(**self.blueprint.vars))
 
-    def generate(self, buffer):
-        dependencies = tuple(item for item in self.blueprint.items.values()
-                             if item.count.by == self.name)
+    def generate(self, buffer, count, parent=None):
+        factory = ItemFactory(self, parent=parent)
 
-        for i in xrange(self.count()):
-            factory = ItemFactory(self)
-
+        for i in xrange(count):
             self.blueprint.vars['this'] = factory
-            buffer.add(factory.generate())
-            self.store_values(factory)
+            obj = factory.generate()
+            self.store_values(obj)
             del self.blueprint.vars['this']
 
-            self.blueprint.vars[self.name] = factory
-            for dependency in dependencies:
-                dependency.generate(buffer)
-            del self.blueprint.vars[self.name]
+            buffer.add(obj)
+
+    def generate_dependencies(self, buffer, batch):
+        for item in self.blueprint.items.values():
+            if item.count.by != self.name:
+                # we only want our direct children
+                continue
+
+            for obj in batch:
+                item.generate(buffer, item.count(), parent=obj)
+
+    def db_values(self, obj):
+        return tuple(getattr(obj, field) for field in self.db_fields)
 
 
 class Count(namedtuple('Count', COUNT_KEYS)):
