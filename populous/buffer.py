@@ -25,8 +25,10 @@ class Buffer(object):
 
     def write(self, item_name, buffer):
         item = self.blueprint.items[item_name]
-        self.backend.write(item, tuple(item.db_values(obj) for obj in buffer))
-        item.generate_dependencies(self, buffer)
+        ids = self.backend.write(
+            item, tuple(item.db_values(obj) for obj in buffer)
+        )
+        item.batch_written(self, buffer, ids)
         buffer.clear()
 
     def get_buffer(self, item_name):

@@ -1,5 +1,6 @@
 import random
 from collections import namedtuple
+from itertools import izip
 
 from cached_property import cached_property
 
@@ -45,7 +46,7 @@ class Item(object):
         else:
             self.store_in = {}
 
-        self.add_field('id', 'IntegerPrimaryKey')
+        self.add_field('id', 'Value', value=None, shadow=True)
 
         if parent:
             for name, field in parent.fields.items():
@@ -120,10 +121,21 @@ class Item(object):
 
         self.count = Count(number=number, by=by, min=min, max=max)
 
-    def store_values(self, factory):
+    def batch_written(self, buffer, batch, ids):
+        objs = tuple(e._replace(id=id) for (e, id) in izip(batch, ids))
+        self.store_values(objs)
+        self.generate_dependencies(buffer, objs)
+
+    def store_values(self, objs):
+        def _get_values(expression):
+            for obj in objs:
+                self.blueprint.vars['this'] = obj
+                yield expression.evaluate(**self.blueprint.vars)
+            del self.blueprint.vars['this']
+
         for name, expression in self.store_in.items():
             store = self.blueprint.vars[name]
-            store.append(expression.evaluate(**self.blueprint.vars))
+            store.extend(_get_values(expression))
 
     def generate(self, buffer, count, parent=None):
         factory = ItemFactory(self, parent=parent)
@@ -131,7 +143,6 @@ class Item(object):
         for i in xrange(count):
             self.blueprint.vars['this'] = factory
             obj = factory.generate()
-            self.store_values(obj)
             del self.blueprint.vars['this']
 
             buffer.add(obj)

@@ -47,7 +47,7 @@ class Postgres(Backend):
 
     def write(self, item, objs):
         with self.cursor as cursor:
-            stmt = "INSERT INTO {} ({}) VALUES {}".format(
+            stmt = "INSERT INTO {} ({}) VALUES {} RETURNING id".format(
                 item.table,
                 ", ".join(item.db_fields),
                 ", ".join("({})".format(
@@ -60,6 +60,8 @@ class Postgres(Backend):
             except psycopg2.DatabaseError as e:
                 raise BackendError("Error during the generation of "
                                    "'{}': {}".format(item.name, e.message))
+
+            return tuple(e[0] for e in cursor.fetchall())
 
     def get_next_pk(self, item, field):
         with self.cursor as cursor:
