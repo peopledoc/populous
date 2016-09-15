@@ -30,7 +30,7 @@ items:
     table: demo_city
     count: 0
     fields:
-      world_id: $world.id
+      world_id: $this.world.id
       name:
         generator: Text
         nullable: false
@@ -42,7 +42,7 @@ items:
     count:
       by: city
     fields:
-      city_id: $city.id
+      city_id: $this.city.id
       owner_id: null  # handled with a side-effect
       type:
         generator: Choices
@@ -53,7 +53,7 @@ items:
     table: demo_citizen
     count: 0
     fields:
-      abode_id: $abode.id
+      abode_id: $this.abode.id
       first_name:
         generator: Text
         nullable: false
@@ -93,4 +93,4 @@ items:
       hobby_id:
         generator: Choices
         choices: hobbies_ids
-      citizen_id: $citizen.id
+      citizen_id: $this.citizen.id
