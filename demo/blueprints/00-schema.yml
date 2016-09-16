@@ -43,7 +43,7 @@ items:
       by: city
     fields:
       city_id: $this.city.id
-      owner_id: null  # handled with a side-effect
+      owner_id: null
       type:
         generator: Choices
         nullable: false
@@ -76,15 +76,6 @@ items:
         generator: Choices
         nullable: false
         choices: ['M', 'F']
-
-  # TODO
-  # - name: owner
-  #   parent: citizen
-  #   count:
-  #     number: 1
-  #     by: abode
-  #   side_effect:
-  #     abode.owner_id: this.id
 
   - name: hobby_citizens_through_table
     table: demo_hobby_citizens
