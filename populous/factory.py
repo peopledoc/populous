@@ -1,11 +1,15 @@
+from populous.exceptions import ValidationError
 
 
 class ItemFactory(object):
 
-    def __init__(self, item):
+    def __init__(self, item, parent=None):
         self.item = item
         self.blueprint = item.blueprint
         self._generated = {}
+
+        if parent:
+            self._generated[item.count.by] = parent
 
     def __getattribute__(self, name):
         try:
@@ -23,9 +27,18 @@ class ItemFactory(object):
                 raise
 
     def generate(self):
-        return self.item.namedtuple._make(
+        obj = self.item.namedtuple._make(
             getattr(self, name) for name in self.item.namedtuple._fields
         )
+        self.clear()
+        return obj
+
+    def clear(self):
+        parent = self.item.count.by
+        if parent:
+            self._generated = {parent: self._generated[parent]}
+        else:
+            self._generated = {}
 
     def _get_value(self, name):
         return next(self.item.fields[name])

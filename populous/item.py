@@ -1,5 +1,6 @@
 import random
 from collections import namedtuple
+from itertools import izip
 
 from cached_property import cached_property
 
@@ -45,7 +46,7 @@ class Item(object):
         else:
             self.store_in = {}
 
-        self.add_field('id', 'IntegerPrimaryKey')
+        self.add_field('id', 'Value', value=None, shadow=True)
 
         if parent:
             for name, field in parent.fields.items():
@@ -55,7 +56,10 @@ class Item(object):
 
     @cached_property
     def namedtuple(self):
-        return namedtuple(self.name, self.db_fields)
+        fields = tuple(self.fields.keys())
+        if self.count.by:
+            fields += (self.count.by,)
+        return namedtuple(self.name, fields)
 
     @cached_property
     def db_fields(self):
@@ -117,27 +121,43 @@ class Item(object):
 
         self.count = Count(number=number, by=by, min=min, max=max)
 
-    def store_values(self, factory):
-        for name, expression in self.store_in.items():
-            store = self.blueprint.vars[name]
-            store.append(expression.evaluate(**self.blueprint.vars))
+    def batch_written(self, buffer, batch, ids):
+        objs = tuple(e._replace(id=id) for (e, id) in izip(batch, ids))
+        self.store_values(objs)
+        self.generate_dependencies(buffer, objs)
 
-    def generate(self, buffer):
-        dependencies = tuple(item for item in self.blueprint.items.values()
-                             if item.count.by == self.name)
-
-        for i in xrange(self.count()):
-            factory = ItemFactory(self)
-
-            self.blueprint.vars['this'] = factory
-            buffer.add(factory.generate())
-            self.store_values(factory)
+    def store_values(self, objs):
+        def _get_values(expression):
+            for obj in objs:
+                self.blueprint.vars['this'] = obj
+                yield expression.evaluate(**self.blueprint.vars)
             del self.blueprint.vars['this']
 
-            self.blueprint.vars[self.name] = factory
-            for dependency in dependencies:
-                dependency.generate(buffer)
-            del self.blueprint.vars[self.name]
+        for name, expression in self.store_in.items():
+            store = self.blueprint.vars[name]
+            store.extend(_get_values(expression))
+
+    def generate(self, buffer, count, parent=None):
+        factory = ItemFactory(self, parent=parent)
+
+        for i in xrange(count):
+            self.blueprint.vars['this'] = factory
+            obj = factory.generate()
+            del self.blueprint.vars['this']
+
+            buffer.add(obj)
+
+    def generate_dependencies(self, buffer, batch):
+        for item in self.blueprint.items.values():
+            if item.count.by != self.name:
+                # we only want our direct children
+                continue
+
+            for obj in batch:
+                item.generate(buffer, item.count(), parent=obj)
+
+    def db_values(self, obj):
+        return tuple(getattr(obj, field) for field in self.db_fields)
 
 
 class Count(namedtuple('Count', COUNT_KEYS)):

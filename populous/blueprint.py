@@ -116,4 +116,4 @@ class Blueprint(object):
                 # the others will be created on the fly
                 continue
 
-            item.generate(buffer)
+            item.generate(buffer, item.count())

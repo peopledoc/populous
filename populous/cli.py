@@ -45,7 +45,7 @@ def _generic_run(modulename, classname, files, **kwargs):
             with backend.transaction():
                 blueprint.generate(buffer)
                 # write everything left in the buffer
-                buffer.clear()
+                buffer.flush()
         finally:
             backend.close()
 

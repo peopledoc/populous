@@ -1,5 +1,4 @@
 from collections import deque, OrderedDict
-from functools import partial
 
 
 class Buffer(object):
@@ -18,14 +17,18 @@ class Buffer(object):
         if len(buffer) == self.maxlen:
             self.write(item_name, buffer)
 
-    def clear(self):
-        for item_name, buffer in self.buffers.items():
-            if buffer:
-                self.write(item_name, buffer)
+    def flush(self):
+        while any(self.buffers.values()):
+            for item_name, buffer in self.buffers.items():
+                if buffer:
+                    self.write(item_name, buffer)
 
     def write(self, item_name, buffer):
         item = self.blueprint.items[item_name]
-        self.backend.write(item, buffer)
+        ids = self.backend.write(
+            item, tuple(item.db_values(obj) for obj in buffer)
+        )
+        item.batch_written(self, buffer, ids)
         buffer.clear()
 
     def get_buffer(self, item_name):
