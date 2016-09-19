@@ -83,5 +83,5 @@ items:
     fields:
       hobby_id:
         generator: Choices
-        choices: hobbies_ids
+        choices: $hobbies_ids
       citizen_id: $this.citizen.id

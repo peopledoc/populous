@@ -1,7 +1,7 @@
 import random
-from operator import attrgetter
 
 from .base import Generator
+from .vars import parse_vars
 
 
 class Choices(Generator):
@@ -11,11 +11,7 @@ class Choices(Generator):
 
         if isinstance(choices, str):
             self.from_var = True
-            self.var, _, attrs = choices.partition('.')
-            if attrs:
-                self.attrgetter = attrgetter(attrs)
-            else:
-                self.attrgetter = None
+            self.choices = parse_vars(choices)
         else:
             self.from_var = False
             self.choices = choices
@@ -33,9 +29,4 @@ class Choices(Generator):
         return self.evaluate(random.choice(self.choices))
 
     def _generate_from_var(self):
-        var = self.blueprint.vars[self.var]
-        if self.attrgetter:
-            choices = self.attrgetter(var)
-        else:
-            choices = var
-        return random.choice(choices)
+        return random.choice(self.evaluate(self.choices))
