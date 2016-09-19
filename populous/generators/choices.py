@@ -1,7 +1,6 @@
 import random
 
 from .base import Generator
-from .vars import parse_vars
 
 
 class Choices(Generator):
@@ -11,7 +10,7 @@ class Choices(Generator):
 
         if isinstance(choices, str):
             self.from_var = True
-            self.choices = parse_vars(choices)
+            self.choices = self.parse_vars(choices)
         else:
             self.from_var = False
             self.choices = choices

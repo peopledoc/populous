@@ -4,7 +4,7 @@ from cached_property import cached_property
 from faker import Factory
 
 from populous.exceptions import ValidationError
-from populous.generators.vars import Expression
+from populous.vars import Expression, parse_vars
 
 fake = Factory.create()
 
@@ -51,6 +51,9 @@ class BaseGenerator(object):
         if isinstance(value, Expression):
             return value.evaluate(**self.blueprint.vars)
         return value
+
+    def parse_vars(self, value):
+        return parse_vars(value)
 
 
 class NullableMixin(object):

@@ -1,5 +1,4 @@
 from .base import Generator
-from .vars import parse_vars
 
 
 class Select(Generator):
@@ -8,7 +7,7 @@ class Select(Generator):
         super(Select, self).get_arguments(**kwargs)
 
         self.table = table
-        self.where = parse_vars(where)
+        self.where = self.parse_vars(where)
         self.pk = pk
 
     def generate(self):

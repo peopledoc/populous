@@ -7,7 +7,7 @@ from cached_property import cached_property
 from populous import generators
 from populous.exceptions import ValidationError
 from populous.factory import ItemFactory
-from populous.generators.vars import parse_vars
+from populous.vars import parse_vars
 
 ITEM_KEYS = ('name', 'parent', 'table', 'count', 'fields', 'store_in')
 COUNT_KEYS = ('number', 'by', 'min', 'max')

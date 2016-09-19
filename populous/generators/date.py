@@ -6,7 +6,6 @@ from dateutil.parser import parse as dateutil_parse
 from dateutil.tz import tzlocal
 
 from .base import Generator
-from .vars import parse_vars
 
 
 def to_timestamp(dt):
@@ -29,8 +28,8 @@ class DateTime(Generator):
 
         self.past = past
         self.future = future
-        self.after = parse_vars(after)
-        self.before = parse_vars(before)
+        self.after = self.parse_vars(after)
+        self.before = self.parse_vars(before)
 
     def generate(self):
         if not self.past:
