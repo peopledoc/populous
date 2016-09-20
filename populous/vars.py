@@ -18,7 +18,7 @@ def parse_vars(value):
     match = re.search(VARS_REGEX, value)
 
     if not match:
-        return value
+        return value.replace('\$', '$')
 
     # if the match is spanning over the entire string,
     # this is a value expression
@@ -26,8 +26,6 @@ def parse_vars(value):
         return ValueExpression(match.group(1))
 
     # otherwise we should use a template expression
-
-    # escape present '{' and '}'
     return TemplateExpression(value)
 
 
@@ -57,8 +55,10 @@ class ValueExpression(Expression):
 class TemplateExpression(Expression):
 
     def __init__(self, value=""):
+        # escape present '{' and '}'
         value = value.replace('{', '{{').replace('}', '}}')
         template = re.sub(VARS_REGEX, SUBSTITUTE, value)
+        template = template.replace('\$', '$')
         self.template = template
 
     def __str__(self):
