@@ -74,3 +74,48 @@ def test_value_expression():
     with pytest.raises(GenerationError,
                        message="'int' object has no attribute 'b'"):
         ValueExpression('a.b').evaluate(a=42)
+
+
+def test_template_expression():
+    from populous.vars import TemplateExpression
+
+    t = TemplateExpression('$foo bar')
+    assert t.evaluate(foo='test') == 'test bar'
+    assert t.evaluate(foo='$foo') == '$foo bar'
+    assert t.evaluate(foo=42) == '42 bar'
+    assert t.evaluate(foo=None) == 'None bar'
+    assert t.evaluate(foo='') == ' bar'
+
+    t = TemplateExpression('$foo $foo $foo')
+    assert t.evaluate(foo='test') == 'test test test'
+
+    t = TemplateExpression(r"\$foo $bar \$\$lol")
+    assert t.evaluate(bar='test') == '$foo test $$lol'
+
+    t = TemplateExpression('{$foo}')
+    assert t.evaluate(foo='test') == '{test}'
+
+    t = TemplateExpression('$foo$bar')
+    assert t.evaluate(foo='test', bar=42) == 'test42'
+
+    t = TemplateExpression('$foo:s')
+    assert t.evaluate(foo='test') == 'test:s'
+
+    class Val(object):
+        None
+
+    a = Val()
+    a.b = 'foo'
+    a.c = Val()
+    a.c.d = 42
+    t = TemplateExpression('$var.b - $var.c.d')
+    assert t.evaluate(var=a) == 'foo - 42'
+
+    t = TemplateExpression('$foo $bar $lol')
+    with pytest.raises(GenerationError, message="Variable 'bar' not found."):
+        t.evaluate(foo='test')
+
+    t = TemplateExpression('$foo.bar')
+    with pytest.raises(GenerationError,
+                       message="'int' object has no attribute 'bar'"):
+        t.evaluate(foo=42)
