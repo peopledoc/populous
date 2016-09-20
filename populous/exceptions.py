@@ -25,5 +25,9 @@ class ValidationError(PopulousError):
             return msg
 
 
+class GenerationError(PopulousError):
+    pass
+
+
 class BackendError(PopulousError):
     pass

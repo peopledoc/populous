@@ -1,6 +1,8 @@
 import re
 from operator import attrgetter
 
+from populous.exceptions import GenerationError
+
 
 # match a variable with attributes ($var.attr), except if it's escaped
 VARS_REGEX = re.compile(r"(?<!\\)\$(?P<var>\w[\w.]*(?<!\.))+")
@@ -45,7 +47,12 @@ class ValueExpression(Expression):
             self.attrgetter = None
 
     def evaluate(self, **vars_):
-        var = vars_[self.var]
+        try:
+            var = vars_[self.var]
+        except KeyError:
+            raise GenerationError(
+                "Variable '{}' not found.".format(self.var)
+            )
         if self.attrgetter:
             return self.attrgetter(var)
         else:
