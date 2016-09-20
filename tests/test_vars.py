@@ -1,4 +1,7 @@
+import pytest
+
 from populous.vars import parse_vars
+from populous.exceptions import GenerationError
 
 
 def test_parse_vars(mocker):
@@ -44,3 +47,26 @@ def test_parse_vars(mocker):
     assert parse_vars('$foo.bar$lol') == Template('$foo.bar$lol')
     assert parse_vars(r'\$$foo') == Template(r'\$$foo')
     assert parse_vars('$$foo') == Template('$$foo')
+
+
+def test_value_expression():
+    from populous.vars import ValueExpression
+
+    v = ValueExpression('foo')
+    assert v.evaluate(foo='bar') == 'bar'
+    assert v.evaluate(foo=1) == 1
+    assert v.evaluate(foo=None) is None
+    assert v.evaluate(foo=[1, 2, 3]) == [1, 2, 3]
+
+    with pytest.raises(GenerationError, message="Variable 'foo' not found."):
+        v.evaluate()
+
+    class Val(object):
+        None
+
+    a = Val()
+    a.b = 'foo'
+    a.c = Val()
+    a.c.d = 42
+    assert ValueExpression('a.b').evaluate(a=a) == 'foo'
+    assert ValueExpression('a.c.d').evaluate(a=a) == 42
