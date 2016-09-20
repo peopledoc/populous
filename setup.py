@@ -24,6 +24,9 @@ setup(
     long_description="TODO",
     packages=find_packages(),
     install_requires=requirements,
+    extra_require={
+        'tests': ['py.test'],
+    },
     entry_points={
         'console_scripts': [
             'populous = populous.__main__:cli'
