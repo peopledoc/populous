@@ -70,3 +70,7 @@ def test_value_expression():
     a.c.d = 42
     assert ValueExpression('a.b').evaluate(a=a) == 'foo'
     assert ValueExpression('a.c.d').evaluate(a=a) == 42
+
+    with pytest.raises(GenerationError,
+                       message="'int' object has no attribute 'b'"):
+        ValueExpression('a.b').evaluate(a=42)

@@ -54,7 +54,13 @@ class ValueExpression(Expression):
                 "Variable '{}' not found.".format(self.var)
             )
         if self.attrgetter:
-            return self.attrgetter(var)
+            try:
+                return self.attrgetter(var)
+            except AttributeError as e:
+                # this message is not very informative ('type' objects has no
+                # attribute 'attr'), but we cannot do much better without
+                # inspecting the calling frame
+                raise GenerationError(e.message)
         else:
             return var
 
