@@ -15,7 +15,7 @@ def parse_vars(value):
         # fast path
         return value
 
-    match = re.match(VARS_REGEX, value)
+    match = re.search(VARS_REGEX, value)
 
     if not match:
         return value
