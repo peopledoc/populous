@@ -78,4 +78,14 @@ class TemplateExpression(Expression):
         return self.evaluate()
 
     def evaluate(self, **vars_):
-        return self.template.format(**vars_)
+        try:
+            return self.template.format(**vars_)
+        except KeyError as e:
+            raise GenerationError(
+                "Variable '{}' not found.".format(e.args[0])
+            )
+        except AttributeError as e:
+            # this message is not very informative ('type' objects has no
+            # attribute 'attr'), but we cannot do much better without
+            # inspecting the calling frame
+            raise GenerationError(e.message)
