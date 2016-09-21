@@ -17,8 +17,8 @@ class Blueprint(object):
     def add_item(self, description):
         if not isinstance(description, dict):
             raise ValidationError(
-                "A blueprint item must be a dict, not a {}"
-                .format(type(description))
+                "A blueprint item must be a dict, not a '{}'"
+                .format(type(description).__name__)
             )
 
         if any(key not in ITEM_KEYS for key in description.keys()):
@@ -54,8 +54,8 @@ class Blueprint(object):
         if store_in:
             if not isinstance(store_in, dict):
                 raise ValidationError(
-                    "'store_in' must be a dict, not a {}"
-                    .format(type(store_in))
+                    "'store_in' must be a dict, not a '{}'"
+                    .format(type(store_in).__name__)
                 )
 
         item = Item(
@@ -66,7 +66,8 @@ class Blueprint(object):
         fields = description.get('fields', {})
         if not isinstance(fields, dict):
             raise ValidationError(
-                "Fields must be a dict, not a {}".format(type(fields))
+                "Fields must be a dict, not a '{}'"
+                .format(type(fields).__name__)
             )
         for field_name, attrs in fields.items():
             if isinstance(attrs, dict):

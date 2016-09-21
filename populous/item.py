@@ -84,7 +84,7 @@ class Item(object):
             if not isinstance(value, int):
                 raise ValidationError(
                     "Item '{}' count: {} must be an integer (got: '{}')."
-                    .format(self.name, key, type(value))
+                    .format(self.name, key, type(value).__name__)
                 )
             if value < 0:
                 raise ValidationError(
