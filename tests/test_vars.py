@@ -58,8 +58,9 @@ def test_value_expression():
     assert v.evaluate(foo=None) is None
     assert v.evaluate(foo=[1, 2, 3]) == [1, 2, 3]
 
-    with pytest.raises(GenerationError, message="Variable 'foo' not found."):
+    with pytest.raises(GenerationError) as e:
         v.evaluate()
+    assert "Variable 'foo' not found." in str(e.value)
 
     class Val(object):
         None
@@ -71,9 +72,9 @@ def test_value_expression():
     assert ValueExpression('a.b').evaluate(a=a) == 'foo'
     assert ValueExpression('a.c.d').evaluate(a=a) == 42
 
-    with pytest.raises(GenerationError,
-                       message="'int' object has no attribute 'b'"):
+    with pytest.raises(GenerationError) as e:
         ValueExpression('a.b').evaluate(a=42)
+    assert "'int' object has no attribute 'b'" in str(e.value)
 
 
 def test_template_expression():
@@ -112,10 +113,11 @@ def test_template_expression():
     assert t.evaluate(var=a) == 'foo - 42'
 
     t = TemplateExpression('$foo $bar $lol')
-    with pytest.raises(GenerationError, message="Variable 'bar' not found."):
+    with pytest.raises(GenerationError) as e:
         t.evaluate(foo='test')
+    assert "Variable 'bar' not found." in str(e.value)
 
     t = TemplateExpression('$foo.bar')
-    with pytest.raises(GenerationError,
-                       message="'int' object has no attribute 'bar'"):
+    with pytest.raises(GenerationError) as e:
         t.evaluate(foo=42)
+    assert "'int' object has no attribute 'bar'" in str(e.value)
