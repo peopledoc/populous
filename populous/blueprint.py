@@ -72,12 +72,6 @@ class Blueprint(object):
         for field_name, attrs in fields.items():
             if isinstance(attrs, dict):
                 generator = attrs.pop('generator', None)
-                if not generator:
-                    raise ValidationError(
-                        "Field '{}' in item '{}' must either be a value, or "
-                        "a dict with a 'generator' key."
-                        .format(field_name, name)
-                    )
                 params = attrs
             else:
                 # If we didn't get a dict, this is a fixed value

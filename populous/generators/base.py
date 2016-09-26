@@ -16,6 +16,8 @@ class BaseGenerator(object):
         self.field_name = field_name
         self.blueprint = item.blueprint
 
+        # make a copy of the kwargs for inheritance
+        self.kwargs = kwargs
         self.get_arguments(**kwargs)
 
     def __iter__(self):
