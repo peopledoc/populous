@@ -13,9 +13,6 @@ class Backend(object):
     def write(self, item, objs):
         pass
 
-    def get_next_pk(self, item, field):
-        return None
-
     def select_random(self, table, fields=None, where=None, max_rows=None):
         raise NotImplementedError()
 
