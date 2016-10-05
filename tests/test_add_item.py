@@ -302,7 +302,7 @@ def test_count_valid():
     assert blueprint.items['test2'].count.number is None
     assert blueprint.items['test2'].count.min == 10
     assert blueprint.items['test2'].count.max == 100
-    assert 10 <= blueprint.items['test2'].count() < 100
+    assert 10 <= blueprint.items['test2'].count() <= 100
 
     blueprint.add_item({'name': 'foo', 'table': 'bar'})
     blueprint.add_item({'name': 'test3', 'table': 'bar',
