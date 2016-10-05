@@ -8,7 +8,9 @@ from .integer import Integer
 from .uuid import UUID
 from .select import Select
 from .email import Email
+from .name import Name, FirstName, LastName
 
 
 __all__ = ['BaseGenerator', 'Generator', 'Choices', 'DateTime', 'Date',
-           'Text', 'Value', 'Boolean', 'Integer', 'UUID', 'Select', 'Email']
+           'Text', 'Value', 'Boolean', 'Integer', 'UUID', 'Select', 'Email',
+           'Name', 'FirstName', 'LastName']
