@@ -74,11 +74,12 @@ class NullableMixin(object):
         return super(NullableMixin, self).get_generator()
 
     def generate_with_null(self):
-        for value in super(NullableMixin, self).get_generator():
+        generator = super(NullableMixin, self).get_generator()
+        while True:
             if random.random() <= self.nullable:
                 yield None
             else:
-                yield value
+                yield next(generator)
 
 
 class UniquenessMixin(object):
