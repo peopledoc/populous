@@ -62,10 +62,3 @@ class Date(DateTime):
     def generate(self):
         for dt in super(Date, self).generate():
             yield dt.date()
-
-
-class Time(DateTime):
-
-    def generate(self):
-        for dt in super(DateTime, self).generate():
-            yield dt.time()
