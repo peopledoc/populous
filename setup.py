@@ -25,7 +25,7 @@ setup(
     packages=find_packages(),
     install_requires=requirements,
     extra_require={
-        'tests': ['pytest', 'pytest-mock'],
+        'tests': ['tox', 'pytest', 'pytest-mock'],
     },
     entry_points={
         'console_scripts': [
