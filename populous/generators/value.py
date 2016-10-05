@@ -1,5 +1,6 @@
 from .base import Generator
 
+
 class Value(Generator):
 
     def get_arguments(self, value=None, **kwargs):

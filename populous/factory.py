@@ -1,4 +1,3 @@
-from populous.exceptions import ValidationError
 
 
 class ItemFactory(object):
