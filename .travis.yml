@@ -1,0 +1,17 @@
+language: python
+
+matrix:
+  include:
+    - python: 2.7
+      env: TOX_ENV=py27
+
+    - env: TOX_ENV=flake8
+
+install:
+  - pip install tox codecov
+
+script:
+  - tox -e $TOX_ENV
+
+after_success:
+  - codecov

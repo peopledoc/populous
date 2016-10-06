@@ -1,6 +1,8 @@
 import re
 from operator import attrgetter
 
+from populous.exceptions import GenerationError
+
 
 # match a variable with attributes ($var.attr), except if it's escaped
 VARS_REGEX = re.compile(r"(?<!\\)\$(?P<var>\w[\w.]*(?<!\.))+")
@@ -15,10 +17,10 @@ def parse_vars(value):
         # fast path
         return value
 
-    match = re.match(VARS_REGEX, value)
+    match = re.search(VARS_REGEX, value)
 
     if not match:
-        return value
+        return value.replace('\$', '$')
 
     # if the match is spanning over the entire string,
     # this is a value expression
@@ -26,8 +28,6 @@ def parse_vars(value):
         return ValueExpression(match.group(1))
 
     # otherwise we should use a template expression
-
-    # escape present '{' and '}'
     return TemplateExpression(value)
 
 
@@ -47,9 +47,20 @@ class ValueExpression(Expression):
             self.attrgetter = None
 
     def evaluate(self, **vars_):
-        var = vars_[self.var]
+        try:
+            var = vars_[self.var]
+        except KeyError:
+            raise GenerationError(
+                "Variable '{}' not found.".format(self.var)
+            )
         if self.attrgetter:
-            return self.attrgetter(var)
+            try:
+                return self.attrgetter(var)
+            except AttributeError as e:
+                # this message is not very informative ('type' objects has no
+                # attribute 'attr'), but we cannot do much better without
+                # inspecting the calling frame
+                raise GenerationError(e.message)
         else:
             return var
 
@@ -57,12 +68,24 @@ class ValueExpression(Expression):
 class TemplateExpression(Expression):
 
     def __init__(self, value=""):
+        # escape present '{' and '}'
         value = value.replace('{', '{{').replace('}', '}}')
         template = re.sub(VARS_REGEX, SUBSTITUTE, value)
+        template = template.replace('\$', '$')
         self.template = template
 
     def __str__(self):
         return self.evaluate()
 
     def evaluate(self, **vars_):
-        return self.template.format(**vars_)
+        try:
+            return self.template.format(**vars_)
+        except KeyError as e:
+            raise GenerationError(
+                "Variable '{}' not found.".format(e.args[0])
+            )
+        except AttributeError as e:
+            # this message is not very informative ('type' objects has no
+            # attribute 'attr'), but we cannot do much better without
+            # inspecting the calling frame
+            raise GenerationError(e.message)

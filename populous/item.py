@@ -1,3 +1,4 @@
+import copy
 import random
 from collections import namedtuple
 from itertools import izip
@@ -50,8 +51,7 @@ class Item(object):
 
         if parent:
             for name, field in parent.fields.items():
-                # TODO: copy
-                self.fields[name] = field
+                self.add_field(name, type(field).__name__, **field.kwargs)
             self.count = parent.count
 
     @cached_property
@@ -68,6 +68,23 @@ class Item(object):
         )
 
     def add_field(self, name, generator, **params):
+        if not generator:
+            parent_field = self.fields.get(name, None)
+            if parent_field:
+                # if the field already exists and a new generator
+                # has not been set, we use the same generator and the
+                # same default params than the existing one
+                generator = type(parent_field).__name__
+                parent_kwargs = copy.deepcopy(parent_field.kwargs)
+                parent_kwargs.update(params)
+                params = parent_kwargs
+            else:
+                raise ValidationError(
+                    "Field '{}' in item '{}' must either be a value, or "
+                    "a dict with a 'generator' key."
+                    .format(name, self.name)
+                )
+
         try:
             generator_cls = getattr(generators, generator)
         except AttributeError:
@@ -84,7 +101,7 @@ class Item(object):
             if not isinstance(value, int):
                 raise ValidationError(
                     "Item '{}' count: {} must be an integer (got: '{}')."
-                    .format(self.name, key, type(value))
+                    .format(self.name, key, type(value).__name__)
                 )
             if value < 0:
                 raise ValidationError(

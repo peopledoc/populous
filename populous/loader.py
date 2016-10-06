@@ -37,7 +37,7 @@ def _load_content(blueprint, content):
     if not isinstance(content, dict):
         raise ValidationError(
             "The blueprint must be a dict containing the keys 'vars' and "
-            "'items'. Got a {}.".format(type(content))
+            "'items'. Got a '{}'.".format(type(content).__name__)
         )
 
     if any(key not in BLUEPRINT_KEYS for key in content.keys()):
@@ -54,7 +54,8 @@ def _load_content(blueprint, content):
 def _load_vars(blueprint, vars_):
     if not isinstance(vars_, dict):
         raise ValidationError(
-            "Blueprint vars must be a dict, not a {}.".format(type(vars_))
+            "Blueprint vars must be a dict, not a {}."
+            .format(type(vars_).__name__)
         )
 
     for name, value in vars_.items():
@@ -64,7 +65,8 @@ def _load_vars(blueprint, vars_):
 def _load_items(blueprint, items):
     if not isinstance(items, list):
         raise ValidationError(
-            "Blueprint items must be in a list, not a {}.".format(type(items))
+            "Blueprint items must be in a list, not a {}."
+            .format(type(items).__name__)
         )
 
     for item in items:

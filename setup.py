@@ -8,7 +8,8 @@ requirements = [
     "click",
     "cached-property",
     "fake-factory",
-    "dateutils"
+    "dateutils",
+    "PyYAML"
 ]
 
 if sys.version_info < (3, 2):
@@ -24,6 +25,9 @@ setup(
     long_description="TODO",
     packages=find_packages(),
     install_requires=requirements,
+    extras_require={
+        'tests': ['tox', 'pytest', 'pytest-mock', 'flake8'],
+    },
     entry_points={
         'console_scripts': [
             'populous = populous.__main__:cli'

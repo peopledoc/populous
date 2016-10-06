@@ -63,20 +63,6 @@ class Postgres(Backend):
 
             return tuple(e[0] for e in cursor.fetchall())
 
-    def get_next_pk(self, item, field):
-        with self.cursor as cursor:
-            cursor.execute(
-                "SELECT nextval(pg_get_serial_sequence(%s, %s))",
-                (item.table, field)
-            )
-            next_pk = cursor.fetchone()[0]
-            # reset the counter to avoid holes
-            cursor.execute(
-                "SELECT setval(pg_get_serial_sequence(%s, %s), %s, false)",
-                (item.table, field, next_pk)
-            )
-            return next_pk
-
     @lru_cache()
     def count(self, table, where=None):
         with self.cursor as cursor:

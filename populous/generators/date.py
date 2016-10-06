@@ -1,4 +1,5 @@
 import random
+from datetime import date
 from datetime import datetime
 from time import mktime
 
@@ -15,7 +16,7 @@ def to_timestamp(dt):
 
 
 def parse_datetime(candidate):
-    if isinstance(candidate, datetime):
+    if isinstance(candidate, (datetime, date)):
         return candidate
     return dateutil_parse(candidate)
 
@@ -61,10 +62,3 @@ class Date(DateTime):
     def generate(self):
         for dt in super(Date, self).generate():
             yield dt.date()
-
-
-class Time(DateTime):
-
-    def generate(self):
-        for dt in super(DateTime, self).generate():
-            yield dt.time()

@@ -16,6 +16,8 @@ class BaseGenerator(object):
         self.field_name = field_name
         self.blueprint = item.blueprint
 
+        # make a copy of the kwargs for inheritance
+        self.kwargs = kwargs
         self.get_arguments(**kwargs)
 
     def __iter__(self):
@@ -72,11 +74,12 @@ class NullableMixin(object):
         return super(NullableMixin, self).get_generator()
 
     def generate_with_null(self):
-        for value in super(NullableMixin, self).get_generator():
+        generator = super(NullableMixin, self).get_generator()
+        while True:
             if random.random() <= self.nullable:
                 yield None
             else:
-                yield value
+                yield next(generator)
 
 
 class UniquenessMixin(object):
