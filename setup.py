@@ -8,7 +8,8 @@ requirements = [
     "click",
     "cached-property",
     "fake-factory",
-    "dateutils"
+    "dateutils",
+    "PyYAML"
 ]
 
 if sys.version_info < (3, 2):
@@ -24,7 +25,7 @@ setup(
     long_description="TODO",
     packages=find_packages(),
     install_requires=requirements,
-    extra_require={
+    extras_require={
         'tests': ['tox', 'pytest', 'pytest-mock', 'flake8'],
     },
     entry_points={
