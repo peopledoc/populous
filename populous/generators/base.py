@@ -88,7 +88,13 @@ class UniquenessMixin(object):
     def get_arguments(self, unique=False, **kwargs):
         super(UniquenessMixin, self).get_arguments(**kwargs)
 
-        self.unique = unique
+        self.unique = bool(unique)
+        if isinstance(unique, (list, tuple)):
+            self.unique_with = tuple(unique)
+        elif unique and unique is not True:
+            self.unique_with = (unique,)
+        else:
+            self.unique_with = None
         self.seen = BloomFilter()
 
     def get_generator(self):
@@ -98,11 +104,17 @@ class UniquenessMixin(object):
 
     def generate_uniquely(self):
         seen = self.seen
+        unique_with = self.unique_with
         for value in super(UniquenessMixin, self).get_generator():
-            if value in seen:
+            if unique_with:
+                this = self.blueprint.vars['this']
+                key = (value,) + tuple(getattr(this, f) for f in unique_with)
+            else:
+                key = value
+            if key in seen:
                 # TODO: avoid inifinite loops
                 continue
-            seen.add(value)
+            seen.add(key)
             yield value
 
 
