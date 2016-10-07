@@ -138,6 +138,16 @@ class Item(object):
 
         self.count = Count(number=number, by=by, min=min, max=max)
 
+    def preprocess(self):
+        unique_fields = tuple(name for name, field in self.fields.items()
+                              if getattr(field, 'unique'))
+        if not unique_fields:
+            return
+
+        for values in self.blueprint.backend.select(self.table, unique_fields):
+            for name, value in zip(unique_fields, values):
+                self.fields[name].seen.add(value, check=False)
+
     def batch_written(self, buffer, batch, ids):
         objs = tuple(e._replace(id=id) for (e, id) in izip(batch, ids))
         self.store_values(objs)
