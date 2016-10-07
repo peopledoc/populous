@@ -5,6 +5,7 @@ from faker import Factory
 
 from populous.exceptions import ValidationError
 from populous.vars import Expression, parse_vars
+from populous.bloom import BloomFilter
 
 fake = Factory.create()
 
@@ -88,6 +89,7 @@ class UniquenessMixin(object):
         super(UniquenessMixin, self).get_arguments(**kwargs)
 
         self.unique = unique
+        self.seen = BloomFilter()
 
     def get_generator(self):
         if self.unique:
@@ -95,7 +97,7 @@ class UniquenessMixin(object):
         return super(UniquenessMixin, self).get_generator()
 
     def generate_uniquely(self):
-        seen = set()  # TODO: use a bloom filter instead
+        seen = self.seen
         for value in super(UniquenessMixin, self).get_generator():
             if value in seen:
                 # TODO: avoid inifinite loops

@@ -9,7 +9,8 @@ requirements = [
     "cached-property",
     "fake-factory",
     "dateutils",
-    "PyYAML"
+    "PyYAML",
+    "peloton_bloomfilters"
 ]
 
 if sys.version_info < (3, 2):
