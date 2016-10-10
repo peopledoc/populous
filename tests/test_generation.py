@@ -88,3 +88,42 @@ def test_blueprint_generate(mocker):
     assert lol.generate.call_args == mocker.call(buffer, 17)
 
     assert buffer.flush.called is True
+
+
+def test_item_generate():
+    blueprint = Blueprint()
+
+    blueprint.add_item({'name': 'foo', 'table': 'test',
+                        'fields': {
+                            'a': {'generator': 'Text'},
+                            'b': {'generator': 'Integer'}
+                        }})
+    item = blueprint.items['foo']
+
+    buffer = Buffer(blueprint)
+    item.generate(buffer, 10)
+
+    assert list(buffer.buffers.keys()) == ['foo']
+    assert len(buffer.buffers['foo']) == 10
+
+    for obj in buffer.buffers['foo']:
+        assert isinstance(obj.a, str)
+        assert isinstance(obj.b, int)
+
+
+def test_item_generate_this_var(mocker):
+    blueprint = Blueprint()
+    blueprint.add_item({'name': 'foo', 'table': 'test'})
+    item = blueprint.items['foo']
+
+    call_count = {'count': 0}
+
+    def _generate(self):
+        call_count['count'] += 1
+        assert self.blueprint.vars['this'] == self
+
+    mocker.patch.object(ItemFactory, 'generate', _generate)
+    buffer = Buffer(blueprint)
+    item.generate(buffer, 10)
+
+    assert call_count['count'] == 10
