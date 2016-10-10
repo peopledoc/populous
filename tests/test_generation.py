@@ -176,6 +176,45 @@ def test_flush_buffer(mocker):
     )
 
 
+def test_flush_buffer_with_dependencies(mocker):
+    class DummyBackend(Backend):
+        def write(self, item, objs):
+            return range(len(objs))
+
+    blueprint = Blueprint(backend=mocker.Mock(wraps=DummyBackend()))
+    blueprint.add_item({'name': 'foo', 'table': 'test'})
+    blueprint.add_item({'name': 'bar', 'table': 'test',
+                        'count': {'number': 1, 'by': 'foo'}})
+
+    blueprint.add_item({'name': 'lol', 'table': 'test',
+                        'count': {'number': 1, 'by': 'bar'}})
+
+    buffer = Buffer(blueprint)
+    blueprint.items['foo'].generate(buffer, 5)
+    assert len(buffer.buffers['foo']) == 5
+    assert 'bar' not in buffer.buffers
+    assert 'lol' not in buffer.buffers
+
+    buffer.flush()
+    assert len(buffer.buffers['foo']) == 0
+    assert len(buffer.buffers['bar']) == 0
+    assert len(buffer.buffers['lol']) == 0
+
+    assert blueprint.backend.write.call_count == 3
+    assert (
+        blueprint.backend.write.call_args_list[0] ==
+        mocker.call(blueprint.items['foo'], ((), (), (), (), ()))
+    )
+    assert (
+        blueprint.backend.write.call_args_list[1] ==
+        mocker.call(blueprint.items['bar'], ((), (), (), (), ()))
+    )
+    assert (
+        blueprint.backend.write.call_args_list[2] ==
+        mocker.call(blueprint.items['lol'], ((), (), (), (), ()))
+    )
+
+
 def test_generate_dependencies():
     class DummyBackend(Backend):
         def write(self, item, objs):
