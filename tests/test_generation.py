@@ -127,3 +127,50 @@ def test_item_generate_this_var(mocker):
     item.generate(buffer, 10)
 
     assert call_count['count'] == 10
+
+
+def test_write_buffer(mocker):
+    class DummyBackend(Backend):
+        def write(self, item, objs):
+            return range(len(objs))
+
+    blueprint = Blueprint(backend=DummyBackend())
+    blueprint.add_item({'name': 'foo', 'table': 'test', 'fields': {'a': 42}})
+    item = blueprint.items['foo']
+
+    mocker.patch.object(item, 'store_values')
+    mocker.patch.object(item, 'generate_dependencies')
+
+    buffer = Buffer(blueprint, maxlen=10)
+    item.generate(buffer, 10)
+
+    objs = tuple(item.namedtuple(id=x, a=42) for x in xrange(10))
+    assert len(buffer.buffers['foo']) == 0
+    assert item.store_values.call_args == mocker.call(objs)
+    assert item.generate_dependencies.call_args == mocker.call(buffer, objs)
+
+
+def test_flush_buffer(mocker):
+    blueprint = Blueprint(backend=mocker.MagicMock())
+    blueprint.add_item({'name': 'foo', 'table': 'test'})
+    blueprint.add_item({'name': 'bar', 'table': 'test'})
+
+    buffer = Buffer(blueprint)
+    blueprint.items['foo'].generate(buffer, 5)
+    blueprint.items['bar'].generate(buffer, 4)
+    assert len(buffer.buffers['foo']) == 5
+    assert len(buffer.buffers['bar']) == 4
+
+    buffer.flush()
+    assert len(buffer.buffers['foo']) == 0
+    assert len(buffer.buffers['bar']) == 0
+
+    assert blueprint.backend.write.call_count == 2
+    assert (
+        blueprint.backend.write.call_args_list[0] ==
+        mocker.call(blueprint.items['foo'], ((), (), (), (), ()))
+    )
+    assert (
+        blueprint.backend.write.call_args_list[1] ==
+        mocker.call(blueprint.items['bar'], ((), (), (), ()))
+    )
