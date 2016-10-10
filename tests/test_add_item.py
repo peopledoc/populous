@@ -380,3 +380,13 @@ def test_count_inheritance():
     assert blueprint.items['test5'].count.min == 20
     assert blueprint.items['test5'].count.max == 100
     assert blueprint.items['test5'].count.by == 'bar'
+
+
+def test_add_var():
+    blueprint = Blueprint()
+
+    blueprint.add_var('foo', 42)
+    blueprint.add_var('bar', None)
+
+    assert blueprint.vars['foo'] == 42
+    assert blueprint.vars['bar'] is None

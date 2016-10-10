@@ -1,5 +1,6 @@
 from collections import OrderedDict
 
+from populous.buffer import Buffer
 from populous.exceptions import ValidationError
 from populous.item import Item, COUNT_KEYS, ITEM_KEYS
 
@@ -108,8 +109,10 @@ class Blueprint(object):
         for item in self.items.values():
             item.preprocess()
 
-    def generate(self, buffer):
+    def generate(self):
         self.preprocess()
+
+        buffer = Buffer(self)
 
         for item in self.items.values():
             if item.count.by:
@@ -118,3 +121,6 @@ class Blueprint(object):
                 continue
 
             item.generate(buffer, item.count())
+
+        # write everything left in the buffer
+        buffer.flush()
