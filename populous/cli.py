@@ -2,7 +2,6 @@ import importlib
 
 import click
 
-from .buffer import Buffer
 from .loader import load_blueprint
 from .exceptions import ValidationError, YAMLError, BackendError
 
@@ -39,13 +38,10 @@ def _generic_run(modulename, classname, files, **kwargs):
 
         backend = backend_cls(**kwargs)
         blueprint = get_blueprint(files, backend=backend)
-        buffer = Buffer(blueprint)
 
         try:
             with backend.transaction():
-                blueprint.generate(buffer)
-                # write everything left in the buffer
-                buffer.flush()
+                blueprint.generate()
         finally:
             backend.close()
 

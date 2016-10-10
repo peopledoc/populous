@@ -2,6 +2,8 @@ from datetime import date
 
 from populous.backends.base import Backend
 from populous.blueprint import Blueprint
+from populous.buffer import Buffer
+from populous.factory import ItemFactory
 from populous.item import Item
 
 
@@ -68,14 +70,21 @@ def test_blueprint_generate(mocker):
                         'count': {'number': 20, 'by': 'foo'}})
     blueprint.add_item({'name': 'lol', 'table': 'test',
                         'count': {'min': 10, 'max': 20}})
+    foo = blueprint.items['foo']
+    bar = blueprint.items['bar']
+    lol = blueprint.items['lol']
 
-    mocker.patch.object(blueprint.items['foo'], 'generate')
-    mocker.patch.object(blueprint.items['bar'], 'generate')
-    mocker.patch.object(blueprint.items['lol'], 'generate')
+    mocker.patch.object(foo, 'generate')
+    mocker.patch.object(bar, 'generate')
+    mocker.patch.object(lol, 'generate')
 
-    buffer = mocker.MagicMock()
-    blueprint.generate(buffer)
+    buffer = mocker.Mock(wraps=Buffer(blueprint))
+    mocker.patch('populous.blueprint.Buffer', return_value=buffer)
 
-    assert blueprint.items['foo'].generate.call_args == mocker.call(buffer, 10)
-    assert blueprint.items['bar'].generate.called is False
-    assert blueprint.items['lol'].generate.call_args == mocker.call(buffer, 17)
+    blueprint.generate()
+
+    assert foo.generate.call_args == mocker.call(buffer, 10)
+    assert bar.generate.called is False
+    assert lol.generate.call_args == mocker.call(buffer, 17)
+
+    assert buffer.flush.called is True
