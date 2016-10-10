@@ -1,5 +1,6 @@
 import random
 import contextlib
+import uuid
 
 try:
     from functools import lru_cache
@@ -91,6 +92,19 @@ class Postgres(Backend):
             results = cursor.fetchall()
             random.shuffle(results)
             return results
+
+    def select(self, table, fields):
+        with self.conn.cursor(str(uuid.uuid4())) as cursor:
+            cursor.execute(
+                "SELECT {fields} FROM {table}"
+                .format(
+                    fields=', '.join(fields),
+                    table=table
+                )
+            )
+
+            for value in cursor:
+                yield value
 
     def close(self):
         if not self.closed:

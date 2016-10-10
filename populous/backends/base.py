@@ -16,6 +16,9 @@ class Backend(object):
     def select_random(self, table, fields=None, where=None, max_rows=None):
         raise NotImplementedError()
 
+    def select(self, table, fields):
+        raise NotImplementedError()
+
     def close(self):
         self.closed = True
 

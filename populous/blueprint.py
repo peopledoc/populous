@@ -104,7 +104,13 @@ class Blueprint(object):
 
         self.items[name] = item
 
+    def preprocess(self):
+        for item in self.items.values():
+            item.preprocess()
+
     def generate(self, buffer):
+        self.preprocess()
+
         for item in self.items.values():
             if item.count.by:
                 # we only create the items with no dependency,

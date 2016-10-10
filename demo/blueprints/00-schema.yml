@@ -36,6 +36,7 @@ items:
         nullable: false
         min_length: 1
         max_length: 40
+        unique: world_id
 
   - name: abode
     table: demo_abode
@@ -59,6 +60,7 @@ items:
         nullable: false
         min_length: 1
         max_length: 20
+        unique: [middle_name, last_name, birth]
       middle_name:
         generator: Text
         nullable: false
