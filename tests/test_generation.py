@@ -55,3 +55,27 @@ def test_item_preprocess(mocker):
     assert ('Homer', 'Simpson', date(1956, 6, 18)) in seen
     assert ('Lisa', 'Simpson', date(1984, 5, 9)) in seen
     assert ('Bart', 'Simpson', date(2016, 10, 9)) not in seen
+
+
+def test_blueprint_generate(mocker):
+    import random
+    random.seed(42)
+
+    blueprint = Blueprint()
+
+    blueprint.add_item({'name': 'foo', 'table': 'test', 'count': 10})
+    blueprint.add_item({'name': 'bar', 'table': 'test',
+                        'count': {'number': 20, 'by': 'foo'}})
+    blueprint.add_item({'name': 'lol', 'table': 'test',
+                        'count': {'min': 10, 'max': 20}})
+
+    mocker.patch.object(blueprint.items['foo'], 'generate')
+    mocker.patch.object(blueprint.items['bar'], 'generate')
+    mocker.patch.object(blueprint.items['lol'], 'generate')
+
+    buffer = mocker.MagicMock()
+    blueprint.generate(buffer)
+
+    assert blueprint.items['foo'].generate.call_args == mocker.call(buffer, 10)
+    assert blueprint.items['bar'].generate.called is False
+    assert blueprint.items['lol'].generate.call_args == mocker.call(buffer, 17)
