@@ -1,5 +1,6 @@
 import copy
 import random
+from collections import OrderedDict
 from collections import namedtuple
 from itertools import izip
 
@@ -35,7 +36,7 @@ class Item(object):
         self.name = name
         self.table = table
         self.count = Count(number=0, by=None, min=None, max=None)
-        self.fields = {}
+        self.fields = OrderedDict()
 
         if store_in:
             self.store_in = {
