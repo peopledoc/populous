@@ -211,3 +211,20 @@ def test_generate_dependencies():
     for x, bar in zip(ids(), buffer.buffers['bar']):
         assert bar.parent_id == x
         assert bar.foo.id == x
+
+
+def test_store_values():
+    class DummyBackend(Backend):
+        def write(self, item, objs):
+            return range(len(objs))
+
+    blueprint = Blueprint(backend=DummyBackend())
+    blueprint.add_item({'name': 'foo', 'table': 'test',
+                        'store_in': {'ids': '$this.id'}})
+    item = blueprint.items['foo']
+
+    buffer = Buffer(blueprint)
+    item.generate(buffer, 10)
+    buffer.flush()
+
+    assert list(blueprint.vars['ids']) == list(range(10))
