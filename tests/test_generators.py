@@ -71,6 +71,40 @@ def test_uniqueness(item):
     assert sorted(take(generator, 10)) == list(range(10))
 
 
+def test_unique_together(blueprint, item):
+
+    class DummyGenerator(UniquenessMixin, generators.BaseGenerator):
+        def generate(self):
+            while True:
+                import random
+                yield random.randint(0, 9)
+
+    generator = DummyGenerator(item, 'foo', unique='bar')
+    assert generator.unique is True
+    assert generator.unique_with == ('bar',)
+
+    class Item:
+        def __init__(self, bar=None, lol=None):
+            self.bar = bar
+            self.lol = lol
+
+    blueprint.vars['this'] = Item(bar=42)
+    assert sorted(take(generator, 10)) == list(range(10))
+
+    blueprint.vars['this'] = Item(bar='foo')
+    assert sorted(take(generator, 10)) == list(range(10))
+
+    generator = DummyGenerator(item, 'foo', unique=['bar', 'lol'])
+    assert generator.unique is True
+    assert generator.unique_with == ('bar', 'lol')
+
+    blueprint.vars['this'] = Item(bar='test', lol=42)
+    assert sorted(take(generator, 10)) == list(range(10))
+
+    blueprint.vars['this'] = Item(bar='test', lol=None)
+    assert sorted(take(generator, 10)) == list(range(10))
+
+
 def test_integer(item):
     generator = generators.Integer(item, 'foo')
     sample = take(generator, 10)
