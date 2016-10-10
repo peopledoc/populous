@@ -174,3 +174,40 @@ def test_flush_buffer(mocker):
         blueprint.backend.write.call_args_list[1] ==
         mocker.call(blueprint.items['bar'], ((), (), (), ()))
     )
+
+
+def test_generate_dependencies():
+    class DummyBackend(Backend):
+        def write(self, item, objs):
+            return range(len(objs))
+
+    blueprint = Blueprint(backend=DummyBackend())
+    blueprint.add_item({'name': 'foo', 'table': 'test'})
+    blueprint.add_item({'name': 'bar', 'table': 'test',
+                        'count': {'number': 2, 'by': 'foo'},
+                        'fields': {'parent_id': '$this.foo.id'}})
+    blueprint.add_item({'name': 'lol', 'table': 'test',
+                        'count': {'min': 1, 'max': 2, 'by': 'foo'},
+                        'fields': {'parent_id': '$this.foo.id'}})
+    blueprint.add_item({'name': 'abc', 'table': 'test'})
+    blueprint.add_item({'name': 'baz', 'table': 'test',
+                        'count': {'number': 20, 'by': 'abc'}})
+
+    buffer = Buffer(blueprint)
+    blueprint.items['foo'].generate(buffer, 10)
+    assert list(buffer.buffers.keys()) == ['foo']
+
+    buffer.write('foo', buffer.buffers['foo'])
+    assert list(buffer.buffers.keys()) == ['foo', 'bar', 'lol']
+    assert len(buffer.buffers['foo']) == 0
+    assert len(buffer.buffers['bar']) == 20
+    assert 10 <= len(buffer.buffers['lol']) <= 20
+
+    def ids():
+        for x in xrange(10):
+            yield x
+            yield x
+
+    for x, bar in zip(ids(), buffer.buffers['bar']):
+        assert bar.parent_id == x
+        assert bar.foo.id == x
