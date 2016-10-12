@@ -415,3 +415,12 @@ def test_ipv6(item):
     assert len(sample) == 10
     assert all(validate_ip(ip, family='IPv6') for ip in sample)
     assert not any(validate_ip(ip, family='IPv4') for ip in sample)
+
+
+def test_url(item):
+    generator = generators.URL(item, 'foo')
+    sample = take(generator, 10)
+    assert len(sample) == 10
+    assert all('.' in e for e in sample)
+    assert all(e.startswith('http') for e in sample)
+    assert all(not e.endswith('/') for e in sample)

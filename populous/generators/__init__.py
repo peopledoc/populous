@@ -10,8 +10,9 @@ from .select import Select
 from .email import Email
 from .name import Name, FirstName, LastName
 from .ip import IP
+from .url import URL
 
 
 __all__ = ['BaseGenerator', 'Generator', 'Choices', 'DateTime', 'Date',
            'Text', 'Value', 'Boolean', 'Integer', 'UUID', 'Select', 'Email',
-           'Name', 'FirstName', 'LastName', 'IP']
+           'Name', 'FirstName', 'LastName', 'IP', 'URL']
