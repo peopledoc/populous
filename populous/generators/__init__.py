@@ -9,8 +9,9 @@ from .uuid import UUID
 from .select import Select
 from .email import Email
 from .name import Name, FirstName, LastName
+from .ip import IP
 
 
 __all__ = ['BaseGenerator', 'Generator', 'Choices', 'DateTime', 'Date',
            'Text', 'Value', 'Boolean', 'Integer', 'UUID', 'Select', 'Email',
-           'Name', 'FirstName', 'LastName']
+           'Name', 'FirstName', 'LastName', 'IP']

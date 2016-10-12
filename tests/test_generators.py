@@ -1,3 +1,4 @@
+import socket
 from itertools import islice
 
 import pytest
@@ -10,6 +11,21 @@ from populous.generators.base import UniquenessMixin
 
 def take(generator, length=100):
     return list(islice(generator, length))
+
+
+def validate_ip(ip, family='both'):
+    def check(ip, family):
+        try:
+            socket.inet_pton(family, ip)
+            return True
+        except socket.error:
+            return False
+
+    if family in ('both', 'IPv4') and check(ip, socket.AF_INET):
+        return True
+    if family in ('both', 'IPv6') and check(ip, socket.AF_INET6):
+        return True
+    return False
 
 
 @pytest.fixture
@@ -374,3 +390,28 @@ def test_last_name(item):
     sample = take(generator, 10)
     assert len(sample) == 10
     assert all(len(e) <= 30 for e in sample)
+
+
+def test_ip(item):
+    generator = generators.IP(item, 'foo')
+    sample = take(generator, 100)
+    assert len(sample) == 100
+    assert all(validate_ip(ip) for ip in sample)
+    assert any(validate_ip(ip, family='IPv4') for ip in sample)
+    assert any(validate_ip(ip, family='IPv6') for ip in sample)
+
+
+def test_ipv4(item):
+    generator = generators.IP(item, 'foo', ipv6=False)
+    sample = take(generator, 10)
+    assert len(sample) == 10
+    assert all(validate_ip(ip, family='IPv4') for ip in sample)
+    assert not any(validate_ip(ip, family='IPv6') for ip in sample)
+
+
+def test_ipv6(item):
+    generator = generators.IP(item, 'foo', ipv4=False)
+    sample = take(generator, 10)
+    assert len(sample) == 10
+    assert all(validate_ip(ip, family='IPv6') for ip in sample)
+    assert not any(validate_ip(ip, family='IPv4') for ip in sample)
