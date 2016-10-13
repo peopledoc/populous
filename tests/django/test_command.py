@@ -1,6 +1,7 @@
 
 
 def test_call_command(capsys):
+    import django
     from django.core.management import call_command
 
     call_command('populous', 'auth', 'app')
@@ -42,7 +43,7 @@ def test_call_command(capsys):
     username:
       generator: Text
       min_length: 1
-      max_length: 30
+      max_length: {username_length}
       unique: true
     first_name:
       generator: Text
@@ -147,4 +148,6 @@ def test_call_command(capsys):
     int_choices:
       generator: Choices
       choices: [1, 2]
-"""
+""".format(
+        username_length=30 if django.VERSION < (1, 10) else 150
+    )
