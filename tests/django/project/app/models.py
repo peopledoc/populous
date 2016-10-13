@@ -1,0 +1,27 @@
+from django.db import models
+
+
+class Test(models.Model):
+    bigint = models.BigIntegerField()
+    null_bigint = models.BigIntegerField(null=True)
+    boolean = models.BooleanField()
+    char = models.CharField(max_length=42)
+    blank_char = models.CharField(blank=True, max_length=100)
+    date = models.DateField()
+    date_auto_now = models.DateField(auto_now=True)
+    date_auto_now_add = models.DateField(auto_now_add=True)
+    datetime = models.DateTimeField()
+    email = models.EmailField()
+    generic_ip = models.GenericIPAddressField()
+    ip_v4 = models.GenericIPAddressField(protocol='IPv4')
+    ip_v6 = models.GenericIPAddressField(protocol='IPv6')
+    integer = models.IntegerField()
+    null_boolean = models.NullBooleanField()
+    positive_int = models.PositiveIntegerField()
+    positive_small_int = models.PositiveSmallIntegerField()
+    small_integer = models.SmallIntegerField()
+    text = models.TextField()
+    url = models.URLField()
+    uuid = models.UUIDField()
+    char_choices = models.CharField(choices=[('foo', 'Foo'), ('bar', 'Bar')])
+    int_choices = models.IntegerField(choices=[(1, 'One'), (2, 'Two')])
