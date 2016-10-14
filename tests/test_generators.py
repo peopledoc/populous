@@ -3,6 +3,7 @@ from itertools import islice
 
 import pytest
 
+from populous.exceptions import GenerationError
 from populous.exceptions import ValidationError
 from populous import generators
 from populous.generators.base import NullableMixin
@@ -86,6 +87,12 @@ def test_uniqueness(item):
     generator = DummyGenerator(item, 'foo', unique=True)
     assert sorted(take(generator, 10)) == list(range(10))
 
+    msg = ("Item 'item', field 'foo': Could not generate a new unique "
+           "value in 10000 tries. Aborting.")
+    with pytest.raises(GenerationError) as e:
+        take(generator, 11)
+    assert msg in str(e.value)
+
 
 def test_unique_together(blueprint, item):
 
@@ -119,6 +126,12 @@ def test_unique_together(blueprint, item):
 
     blueprint.vars['this'] = Item(bar='test', lol=None)
     assert sorted(take(generator, 10)) == list(range(10))
+
+    msg = ("Item 'item', field 'foo': Could not generate a new unique "
+           "value in 10000 tries. Aborting.")
+    with pytest.raises(GenerationError) as e:
+        take(generator, 11)
+    assert msg in str(e.value)
 
 
 def test_integer(item):
