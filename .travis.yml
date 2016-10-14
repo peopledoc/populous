@@ -4,7 +4,10 @@ matrix:
   include:
     - python: 2.7
       env: TOX_ENV=py27
-
+    - env: TOX_ENV=py27-django18
+    - env: TOX_ENV=py27-django19
+    - env: TOX_ENV=py27-django110
+    - env: TOX_ENV=py27-djangostable
     - env: TOX_ENV=flake8
 
 install:
