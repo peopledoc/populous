@@ -3,6 +3,7 @@ import random
 from cached_property import cached_property
 from faker import Factory
 
+from populous.exceptions import GenerationError
 from populous.exceptions import ValidationError
 from populous.vars import Expression, parse_vars
 from populous.bloom import BloomFilter
@@ -84,6 +85,7 @@ class NullableMixin(object):
 
 
 class UniquenessMixin(object):
+    MAX_TRIES = 10000
 
     def get_arguments(self, unique=False, **kwargs):
         super(UniquenessMixin, self).get_arguments(**kwargs)
@@ -105,6 +107,7 @@ class UniquenessMixin(object):
     def generate_uniquely(self):
         seen = self.seen
         unique_with = self.unique_with
+        tries = 0
         for value in super(UniquenessMixin, self).get_generator():
             if unique_with:
                 this = self.blueprint.vars['this']
@@ -112,8 +115,16 @@ class UniquenessMixin(object):
             else:
                 key = value
             if key in seen:
-                # TODO: avoid inifinite loops
+                tries += 1
+                if tries > self.MAX_TRIES:
+                    raise GenerationError(
+                        "Item '{}', field '{}': Could not generate a "
+                        "new unique value in {} tries. Aborting."
+                        .format(self.item.name, self.field_name,
+                                self.MAX_TRIES)
+                    )
                 continue
+            tries = 0
             seen.add(key)
             yield value
 
