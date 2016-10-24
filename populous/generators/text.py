@@ -1,4 +1,5 @@
-import itertools
+import array
+import os
 import random
 import string
 
@@ -32,14 +33,15 @@ class Text(Generator):
         return description
 
     def generate(self):
-        def _chars():
-            while True:
-                yield random.choice(self.chars)
-        chars = _chars()
+        chars = self.chars
+        nb_chars = len(chars)
 
         while True:
-            yield ''.join(
-                itertools.islice(
-                    chars, random.randint(self.min_length, self.max_length)
-                )
-            )
+            # get a random length for the string
+            length = random.randint(self.min_length, self.max_length)
+            # get a random array of short integers of the same length than
+            # the final string
+            rand_shorts = array.array('H', os.urandom(length * 2))
+            # for each short in the array, get an element from the list
+            # of possible chars
+            yield ''.join([chars[short % nb_chars] for short in rand_shorts])
