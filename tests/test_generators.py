@@ -242,10 +242,36 @@ def test_text(item):
     sample = take(generator, 10)
     assert len(sample) == 10
     assert all(isinstance(e, str) for e in sample)
-    assert all(all(c in string.printable for c in e) for e in sample)
+    chars = string.letters + string.digits + ' '
+    assert all(all(c in chars for c in e) for e in sample)
 
     generator = generators.Text(item, 'foo', min_length=10, max_length=100)
     assert all(10 <= len(e) <= 100 for e in take(generator, 10))
+
+    generator = generators.Text(item, 'foo', chars='<0-9>', min_length=1,
+                                max_length=100)
+    sample = take(generator, 10)
+    assert len(sample) == 10
+    assert all(e.isdigit() for e in sample)
+
+    generator = generators.Text(item, 'foo', chars='<printable>',
+                                min_length=1, max_length=100)
+    sample = take(generator, 10)
+    assert len(sample) == 10
+    assert all((c in string.printable for c in e) for e in sample)
+
+    generator = generators.Text(item, 'foo', chars='<a-z><0-9>',
+                                min_length=1, max_length=100)
+    sample = take(generator, 10)
+    assert len(sample) == 10
+    chars = string.ascii_lowercase + string.digits
+    assert all((c in chars for c in e) for e in sample)
+
+    generator = generators.Text(item, 'foo', chars='abc', min_length=1,
+                                max_length=100)
+    sample = take(generator, 10)
+    assert len(sample) == 10
+    assert all((c in 'abc' for c in e) for e in sample)
 
 
 def test_datetime(blueprint, item):
