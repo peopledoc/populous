@@ -87,4 +87,5 @@ items:
       hobby_id:
         generator: Choices
         choices: $hobbies_ids
+        unique: citizen_id
       citizen_id: $this.citizen.id
