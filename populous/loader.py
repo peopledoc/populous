@@ -44,7 +44,7 @@ def _load_content(blueprint, content):
         extra = set(content.keys()) - set(BLUEPRINT_KEYS)
         raise ValidationError(
             "Unknown key(s) in blueprint: '{}'. Possible keys are: '{}'."
-            .format(', '.join(extra), ', '.join(BLUEPRINT_KEYS))
+            .format(', '.join(sorted(extra)), ', '.join(BLUEPRINT_KEYS))
         )
 
     _load_vars(blueprint, content.get('vars', {}))

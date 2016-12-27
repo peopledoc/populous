@@ -90,7 +90,7 @@ def test_load_content(mocker):
 
     with pytest.raises(ValidationError) as e:
         loader._load_content(bp, {'items': None, 'foo': None, 'bar': None})
-    assert "Unknown key(s) in blueprint: 'foo, bar'" in str(e.value)
+    assert "Unknown key(s) in blueprint: 'bar, foo'" in str(e.value)
 
     # valid content
     mocker.resetall()
