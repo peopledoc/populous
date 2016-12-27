@@ -7,7 +7,7 @@ import populous
 requirements = [
     "click",
     "cached-property",
-    "fake-factory",
+    "Faker",
     "dateutils",
     "PyYAML",
     "peloton_bloomfilters"
