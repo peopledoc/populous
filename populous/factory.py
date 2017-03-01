@@ -25,16 +25,19 @@ class ItemFactory(object):
             else:
                 raise
 
+    def set(self, field, value):
+        self._generated[field] = value
+
     def generate(self):
         obj = self.item.namedtuple._make(
-            getattr(self, name) for name in self.item.namedtuple._fields
+            getattr(self, name, None) for name in self.item.namedtuple._fields
         )
         self.clear()
         return obj
 
     def clear(self):
         parent = self.item.count.by
-        if parent:
+        if parent and parent in self._generated:
             self._generated = {parent: self._generated[parent]}
         else:
             self._generated = {}

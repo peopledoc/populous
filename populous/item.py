@@ -162,10 +162,11 @@ class Item(object):
             for field, index in to_fill:
                 field.seen.add(values[index], check=False)
 
-    def batch_written(self, buffer, batch, ids):
-        objs = tuple(e._replace(id=id) for (e, id) in izip(batch, ids))
-        self.store_values(objs)
-        self.generate_dependencies(buffer, objs)
+    def batch_written(self, buffer, batch, ids=None):
+        if ids:
+            batch = tuple(e._replace(id=id) for (e, id) in izip(batch, ids))
+        self.store_values(batch)
+        self.generate_dependencies(buffer, batch)
 
     def store_values(self, objs):
         def _get_values(expression):

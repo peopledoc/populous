@@ -138,3 +138,9 @@ class Blueprint(object):
 
         # write everything left in the buffer
         buffer.flush()
+
+        for fixture in self.fixtures:
+            fixture.generate(buffer)
+
+        # write everything left in the buffer
+        buffer.flush()
