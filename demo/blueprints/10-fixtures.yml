@@ -1,3 +1,5 @@
+# Can only work if you have constraints:
+#
 # fixtures:
 #   hobby:
 #     dance:
@@ -10,6 +12,8 @@
 #       name: 'writing'
 
 # ---------------------
+
+# Would regenerate the hobbies each time
 
 # vars:
 #   hobbies: ['dance', 'drawing', 'fishing', 'writing']
@@ -24,22 +28,27 @@
 
 # ----------------------
 
-fixtures:
-  world:
-    earth:
-      name: earth
 
-  city:
-    paris:
-      name: Paris
-      world_id: $earth.id
+# Can only work if you have constraints:
+#
+# fixtures:
+#   world:
+#     earth:
+#       name: earth
 
-  abode:
-    alice_abode:
-      city_id: $paris.id
+#   city:
+#     paris:
+#       name: Paris
+#       world_id: $earth.id
 
-  citizen:
-    alice:
-      first_name: Alice
-      last_name: Kingsley
-      abode_id: $alice_abode.id
+#   abode:
+#     alice_abode:
+#       city_id: $paris.id
+
+#   citizen:
+#     alice:
+#       first_name: Alice
+#       last_name: Kingsley
+#       abode_id: $alice_abode.id
+
+#

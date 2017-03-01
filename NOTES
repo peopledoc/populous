@@ -1,0 +1,4 @@
+- Upsert only works if we have a constraint. It doesn't work for citizen
+  first_name + last_name for instance
+- Do we really want to generate the associated items (eg: cities for a world)
+  if the fixture wasn't created ?
