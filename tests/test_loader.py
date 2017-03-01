@@ -70,6 +70,7 @@ def test_load_content(mocker):
     bp = Blueprint()
     load_vars = mocker.patch('populous.loader._load_vars')
     load_items = mocker.patch('populous.loader._load_items')
+    load_fixtures = mocker.patch('populous.loader._load_fixtures')
 
     # empty content
     loader._load_content(bp, None)
@@ -77,6 +78,7 @@ def test_load_content(mocker):
     loader._load_content(bp, [])
     assert load_vars.called is False
     assert load_items.called is False
+    assert load_fixtures.called is False
 
     # wrong type
     with pytest.raises(ValidationError) as e:
@@ -97,18 +99,24 @@ def test_load_content(mocker):
     loader._load_content(bp, {'items': [{'foo': 42}]})
     assert load_vars.call_args == mocker.call(bp, {})
     assert load_items.call_args == mocker.call(bp, [{'foo': 42}])
+    assert load_fixtures.call_args == mocker.call(bp, {})
 
     mocker.resetall()
     loader._load_content(bp, {'vars': {'foo': 'bar'}})
     assert load_vars.call_args == mocker.call(bp, {'foo': 'bar'})
     assert load_items.call_args == mocker.call(bp, [])
+    assert load_fixtures.call_args == mocker.call(bp, {})
 
     mocker.resetall()
-    loader._load_content(
-        bp, {'vars': {'foo': 'bar'}, 'items': [{'bar': 'foo'}]}
+    loader._load_content(bp, {
+            'vars': {'foo': 'bar'},
+            'items': [{'bar': 'foo'}],
+            'fixtures': {'baz': []}
+        }
     )
     assert load_vars.call_args == mocker.call(bp, {'foo': 'bar'})
     assert load_items.call_args == mocker.call(bp, [{'bar': 'foo'}])
+    assert load_fixtures.call_args == mocker.call(bp, {'baz': []})
 
 
 def test_load_vars(mocker):
@@ -152,4 +160,30 @@ def test_load_items(mocker):
     assert add_item.call_args_list == [
         mocker.call({'foo': 'bar'}),
         mocker.call({'bar': 'lol'}),
+    ]
+
+
+def test_load_fixtures(mocker):
+    bp = Blueprint()
+    add_fixture = mocker.patch.object(bp, 'add_fixture')
+
+    # wrong type
+    with pytest.raises(ValidationError) as e:
+        loader._load_fixtures(bp, [])
+    assert "fixtures must be in a dict, not a list." in str(e.value)
+
+    with pytest.raises(ValidationError) as e:
+        loader._load_fixtures(bp, {'foo': {}, 'bar': []})
+    assert "for item 'bar' must be in a dict, not a list." in str(e.value)
+
+    # valid values
+    fixtures = {
+        'foo': {'a': {1: 2}, 'b': {3: 4}},
+        'bar': {'c': {5: 6}}
+    }
+    loader._load_fixtures(bp, fixtures)
+    assert sorted(add_fixture.call_args_list) == [
+        mocker.call('bar', 'c', {5: 6}),
+        mocker.call('foo', 'a', {1: 2}),
+        mocker.call('foo', 'b', {3: 4}),
     ]

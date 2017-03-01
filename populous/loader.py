@@ -1,11 +1,12 @@
 import yaml
+from collections import OrderedDict
 
 from .blueprint import Blueprint
 from .exceptions import ValidationError
 from .exceptions import YAMLError
 
 
-BLUEPRINT_KEYS = ('items', 'vars')
+BLUEPRINT_KEYS = ('fixtures', 'items', 'vars')
 
 
 def load_blueprint(*filenames, **kwargs):
@@ -23,9 +24,21 @@ def load_blueprint(*filenames, **kwargs):
 
 
 def _get_yaml(filename):
+    class OrderedLoader(yaml.Loader):
+        pass
+
+    def construct_mapping(loader, node):
+        loader.flatten_mapping(node)
+        return OrderedDict(loader.construct_pairs(node))
+
+    OrderedLoader.add_constructor(
+        yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
+        construct_mapping
+    )
+
     with open(filename) as f:
         try:
-            return yaml.load(f)
+            return yaml.load(f, OrderedLoader)
         except yaml.YAMLError as e:
             raise YAMLError(filename, str(e))
 
@@ -49,6 +62,7 @@ def _load_content(blueprint, content):
 
     _load_vars(blueprint, content.get('vars', {}))
     _load_items(blueprint, content.get('items', []))
+    _load_fixtures(blueprint, content.get('fixtures', {}))
 
 
 def _load_vars(blueprint, vars_):
@@ -71,3 +85,21 @@ def _load_items(blueprint, items):
 
     for item in items:
         blueprint.add_item(item)
+
+
+def _load_fixtures(blueprint, fixtures):
+    if not isinstance(fixtures, dict):
+        raise ValidationError(
+            "Blueprint fixtures must be in a dict, not a {}."
+            .format(type(fixtures).__name__)
+        )
+
+    for item, values in fixtures.items():
+        if not isinstance(values, dict):
+            raise ValidationError(
+                "Fixtures for item '{}' must be in a dict, not a {}."
+                .format(item, type(values).__name__)
+            )
+
+        for name, fixture in values.items():
+            blueprint.add_fixture(item, name, fixture)
