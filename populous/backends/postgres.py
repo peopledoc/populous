@@ -47,6 +47,7 @@ class Postgres(Backend):
                 self._current_cursor = None
 
     def write(self, item, objs):
+        print "| INSERTING", item.name, "-", len(objs)
         with self.cursor as cursor:
             stmt = "INSERT INTO {} ({}) VALUES {} RETURNING id".format(
                 item.table,
@@ -63,6 +64,93 @@ class Postgres(Backend):
                                    "'{}': {}".format(item.name, e.message))
 
             return tuple(e[0] for e in cursor.fetchall())
+
+    def upsert(self, item, keys, values):
+        print "| Upserting item", item.name
+        update_fields = tuple(field for field in item.db_fields if field not in keys)
+        if update_fields:
+            query = """
+    CREATE OR REPLACE FUNCTION _tmp_populous_upsert()RETURNS int AS
+    $$
+    DECLARE
+    id int;
+    BEGIN
+        LOOP
+            UPDATE {table} SET ({update_fields}) = ({update_values}) WHERE {keys} RETURNING {table}.id INTO id;
+            IF found THEN
+                RETURN id;
+            END IF;
+            BEGIN
+                INSERT INTO {table} ({fields}) VALUES ({values}) RETURNING {table}.id INTO id;
+                RETURN id;
+            EXCEPTION WHEN unique_violation THEN
+                -- pass
+            END;
+    END LOOP;
+    END;
+    $$
+    LANGUAGE plpgsql;
+
+    SELECT _tmp_populous_upsert() AS id;
+    -- DROP FUNCTION _tmp_populous_upsert;
+            """.strip().format(
+                table=item.table,
+                update_fields=", ".join(update_fields),
+                update_values=", ".join("%s" for _ in xrange(len(update_fields))),
+                keys="AND ".join(
+                    "{}=%s".format(key) for key in keys
+                ),
+                fields=", ".join(item.db_fields),
+                values=", ".join("%s" for _ in xrange(len(item.db_fields)))
+            )
+
+            params = [getattr(values, field) for field in update_fields]
+            params += [getattr(values, key) for key in keys]
+            params += [getattr(values, field) for field in item.db_fields]
+        else:
+            query = """
+    CREATE OR REPLACE FUNCTION _tmp_populous_upsert()RETURNS int AS
+    $$
+    DECLARE
+    id int;
+    BEGIN
+        LOOP
+            BEGIN
+                INSERT INTO {table} ({fields}) VALUES ({values}) RETURNING {table}.id INTO id;
+                RETURN id;
+            EXCEPTION WHEN unique_violation THEN
+                -- pass
+            END;
+    END LOOP;
+    END;
+    $$
+    LANGUAGE plpgsql;
+
+    SELECT _tmp_populous_upsert() AS id;
+    -- DROP FUNCTION _tmp_populous_upsert;
+            """.strip().format(
+                table=item.table,
+                fields=", ".join(item.db_fields),
+                values=", ".join("%s" for _ in xrange(len(item.db_fields)))
+            )
+
+            params = [getattr(values, field) for field in item.db_fields]
+
+        # print
+        # print query
+        # print "-------------"
+        # print
+
+        with self.cursor as cursor:
+            try:
+                cursor.execute(query, params)
+            except psycopg2.DatabaseError as e:
+                raise BackendError(
+                    "Error when inserting or deleting fixture for item '{}': "
+                    "{}".format(item.name, e.message)
+                )
+
+        return cursor.fetchall()[0][0]
 
     @lru_cache()
     def count(self, table, where=None):
