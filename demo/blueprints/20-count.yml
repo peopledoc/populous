@@ -1,21 +1,18 @@
 items:
   - name: hobby
-    count: 10
+    count: 5
 
   - name: world
-    parent: world
     count: 5
 
   - name: city
-    parent: city
     count:
       number: 10
       by: world
 
   - name: abode
-    parent: abode
     count:
-      number: 100
+      number: 10
       by: city
 
   - name: citizen

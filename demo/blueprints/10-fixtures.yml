@@ -1,0 +1,45 @@
+# fixtures:
+#   hobby:
+#     dance:
+#       name: 'dance'
+#     drawing:
+#       name: 'drawing'
+#     fishing:
+#       name: 'fishing'
+#     writing:
+#       name: 'writing'
+
+# ---------------------
+
+# vars:
+#   hobbies: ['dance', 'drawing', 'fishing', 'writing']
+
+# items:
+#   hobby:
+#     fields:
+#       name:
+#         generator: Sequence
+#         items: $hobbies
+#     count: len(hobbies)
+
+# ----------------------
+
+fixtures:
+  world:
+    earth:
+      name: earth
+
+  city:
+    paris:
+      name: Paris
+      world_id: $earth.id
+
+  abode:
+    alice_abode:
+      city_id: $paris.id
+
+  citizen:
+    alice:
+      first_name: Alice
+      last_name: Kingsley
+      abode_id: $alice_abode.id
