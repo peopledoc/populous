@@ -390,3 +390,12 @@ def test_add_var():
 
     assert blueprint.vars['foo'] == 42
     assert blueprint.vars['bar'] is None
+
+
+def test_add_fixture():
+    blueprint = Blueprint()
+
+    # wrong type
+    with pytest.raises(ValidationError) as e:
+        blueprint.add_fixture('foo', 'bar', [1, 2])
+    assert "Fixture 'bar' must be a dict, not a list" in str(e.value)

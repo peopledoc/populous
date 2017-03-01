@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
 from populous.buffer import Buffer
+from populous.fixture import Fixture
 from populous.exceptions import ValidationError
 from populous.item import Item, COUNT_KEYS, ITEM_KEYS
 
@@ -11,6 +12,7 @@ class Blueprint(object):
         self.items = OrderedDict(items or {})
         self.vars = vars_ or {}
         self.backend = backend
+        self.fixtures = []
 
     def add_var(self, name, value):
         self.vars[name] = value
@@ -104,6 +106,18 @@ class Blueprint(object):
             item.add_count(**count)
 
         self.items[name] = item
+
+    def add_fixture(self, item, name, params):
+        if not isinstance(params, dict):
+            raise ValidationError(
+                "Fixture '{}' must be a dict, not a {}"
+                .format(name, type(params).__name__)
+            )
+
+        if any(fixture.name == name for fixture in self.fixtures):
+            raise ValidationError("Fixture '{}' already exists.".format(name))
+
+        self.fixtures.append(Fixture(self, item, name, params))
 
     def preprocess(self):
         for item in self.items.values():
