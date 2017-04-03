@@ -3,6 +3,7 @@ from itertools import islice
 
 import pytest
 
+from populous.backends.base import Backend
 from populous.exceptions import GenerationError
 from populous.exceptions import ValidationError
 from populous import generators
@@ -207,6 +208,21 @@ def test_value(blueprint, item):
     blueprint.vars['foo'] = None
     assert take(generator, 2) == [None, None]
     blueprint.vars['foo'] = 'bar'
+    assert take(generator, 2) == ['bar', 'bar']
+
+
+def test_value_to_json(blueprint, item):
+    blueprint.backend = Backend()
+    generator = generators.Value(item, 'foo', value={'foo': 42}, to_json=True)
+    assert take(generator, 2) == ['{"foo": 42}'] * 2
+
+    class DummyBackend(Backend):
+        @property
+        def json_adapter(self):
+            return lambda v: 'bar'
+
+    blueprint.backend = DummyBackend()
+    generator = generators.Value(item, 'foo', value={'foo': 42}, to_json=True)
     assert take(generator, 2) == ['bar', 'bar']
 
 

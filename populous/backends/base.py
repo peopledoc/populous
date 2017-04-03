@@ -6,6 +6,11 @@ class Backend(object):
     def __init__(self, *args, **kwargs):
         self.closed = False
 
+    @property
+    def json_adapter(self):
+        import json
+        return json.dumps
+
     @contextlib.contextmanager
     def transaction(self):
         yield
