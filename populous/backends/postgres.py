@@ -53,12 +53,13 @@ class Postgres(Backend):
 
     def write(self, item, objs):
         with self.cursor as cursor:
-            stmt = "INSERT INTO {} ({}) VALUES {} RETURNING id".format(
+            stmt = "INSERT INTO {} ({}) VALUES {} RETURNING {}".format(
                 item.table,
                 ", ".join(item.db_fields),
                 ", ".join("({})".format(
                     ", ".join("%s" for _ in xrange(len(item.db_fields)))
-                ) for _ in xrange(len(objs)))
+                ) for _ in xrange(len(objs))),
+                self.get_pk_column(item.table)
             )
 
             try:
@@ -110,6 +111,19 @@ class Postgres(Backend):
 
             for value in cursor:
                 yield value
+
+    @lru_cache()
+    def get_pk_column(self, table):
+        with self.cursor as cursor:
+            cursor.execute(
+                """
+SELECT a.attname FROM pg_index i
+JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey)
+WHERE i.indrelid = %s::regclass AND i.indisprimary;
+                """,
+                (table,)
+            )
+            return cursor.fetchone()[0]
 
     def close(self):
         if not self.closed:
