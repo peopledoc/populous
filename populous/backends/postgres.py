@@ -30,6 +30,11 @@ class Postgres(Backend):
                                .format(e))
 
     @property
+    def json_adapter(self):
+        from psycopg2.extras import Json
+        return Json
+
+    @property
     @contextlib.contextmanager
     def cursor(self):
         if self._current_cursor:
