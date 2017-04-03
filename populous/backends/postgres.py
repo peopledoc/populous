@@ -12,6 +12,7 @@ from .base import Backend
 
 try:
     import psycopg2
+    import psycopg2.extras
 except ImportError:
     raise BackendError("You must install 'psycopg2' in order to use the "
                        "Postgresql backend")
@@ -28,6 +29,9 @@ class Postgres(Backend):
         except psycopg2.DatabaseError as e:
             raise BackendError("Error connecting to Postgresql DB: {}"
                                .format(e))
+
+        # authorize uuids objects in queries
+        psycopg2.extras.register_uuid()
 
     @property
     def json_adapter(self):
