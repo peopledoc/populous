@@ -166,6 +166,32 @@ def test_choices(blueprint, item):
     assert all(e in 'xyz' for e in sample)
 
 
+def test_choices_empty(blueprint, item):
+    generator = generators.Choices(item, 'foo', choices=[])
+    with pytest.raises(GenerationError) as e:
+        take(generator, 1)
+    msg = "The choices for field 'foo' of item 'item' are empty."
+    assert msg in str(e.value)
+
+    generator = generators.Choices(item, 'foo', choices='$test')
+    blueprint.vars['test'] = []
+
+    generator.nullable = 0.5
+    sample = take(generator, 10)
+    assert sample == [None] * 10
+
+    blueprint.vars['test'] = ['foo']
+    assert take(generator, 1) == ['foo']
+
+    blueprint.vars['test'] = []
+    generator.nullable = 0
+    with pytest.raises(GenerationError) as e:
+        take(generator, 1)
+    msg = ("The choices for field 'foo' of item 'item' are empty, and the "
+           "field is not nullable.")
+    assert msg in str(e.value)
+
+
 def test_boolean(item):
     generator = generators.Boolean(item, 'foo')
     sample = take(generator, 100)
