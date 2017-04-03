@@ -373,6 +373,13 @@ def test_date(blueprint, item):
     assert all(e >= date(1900, 1, 1) for e in sample)
     assert all(e <= date(2012, 10, 10) for e in sample)
 
+    generator = generators.Date(item, 'foo', after=2015, before=2016)
+    sample = take(generator, 100)
+    assert all(e.year == 2015 for e in sample)
+    months = set(e.month for e in sample)
+    for month in range(1, 12):
+        assert month in months
+
 
 def test_name(item):
     import random

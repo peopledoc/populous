@@ -18,6 +18,12 @@ def to_timestamp(dt):
 def parse_datetime(candidate):
     if isinstance(candidate, (datetime, date)):
         return candidate
+    if isinstance(candidate, int):
+        # we just assume this is a year
+        candidate = str(candidate)
+        # force the date to start at the 1st of January otherwise
+        # dateutil takes the current day & month
+        candidate = '01/01/' + candidate
     return dateutil_parse(candidate)
 
 
