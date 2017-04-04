@@ -55,6 +55,8 @@ class Item(object):
                 self.add_field(name, type(field).__name__, **field.kwargs)
             self.count = parent.count
 
+        self.ancestors = parent.ancestors + [parent.name] if parent else []
+
     @cached_property
     def namedtuple(self):
         fields = tuple(self.fields.keys())
@@ -189,13 +191,13 @@ class Item(object):
             buffer.add(obj)
 
     def generate_dependencies(self, buffer, batch):
+        # generate items having a "count by" on this item
+        # or one of its ancestors
+        names = frozenset(self.ancestors) | {self.name}
         for item in self.blueprint.items.values():
-            if item.count.by != self.name:
-                # we only want our direct children
-                continue
-
-            for obj in batch:
-                item.generate(buffer, item.count(), parent=obj)
+            if item.count.by in names:
+                for obj in batch:
+                    item.generate(buffer, item.count(), parent=obj)
 
     def db_values(self, obj):
         return tuple(getattr(obj, field) for field in self.db_fields)

@@ -252,6 +252,37 @@ def test_generate_dependencies():
         assert bar.foo.id == x
 
 
+def test_generate_dependencies_ancestors():
+    class DummyBackend(Backend):
+        def write(self, item, objs):
+            return range(len(objs))
+
+    blueprint = Blueprint(backend=DummyBackend())
+    blueprint.add_item({'name': 'foo', 'table': 'test'})
+    blueprint.add_item({'name': 'foo2', 'parent': 'foo'})
+    blueprint.add_item({'name': 'foo3', 'parent': 'foo2'})
+    blueprint.add_item({'name': 'bar', 'table': 'test',
+                        'count': {'number': 2, 'by': 'foo'},
+                        'fields': {'parent_id': '$this.foo.id'}})
+
+    buffer = Buffer(blueprint)
+    blueprint.items['foo3'].generate(buffer, 2)
+    blueprint.items['foo2'].generate(buffer, 2)
+    assert list(buffer.buffers.keys()) == ['foo3', 'foo2']
+
+    buffer.write('foo3', buffer.buffers['foo3'])
+    assert list(buffer.buffers.keys()) == ['foo3', 'foo2', 'bar']
+    assert len(buffer.buffers['foo2']) == 2
+    assert len(buffer.buffers['foo3']) == 0
+    assert len(buffer.buffers['bar']) == 4
+
+    buffer.write('foo2', buffer.buffers['foo2'])
+    assert list(buffer.buffers.keys()) == ['foo3', 'foo2', 'bar']
+    assert len(buffer.buffers['foo2']) == 0
+    assert len(buffer.buffers['foo3']) == 0
+    assert len(buffer.buffers['bar']) == 8
+
+
 def test_store_values():
     class DummyBackend(Backend):
         def write(self, item, objs):
