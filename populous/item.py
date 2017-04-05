@@ -10,6 +10,7 @@ from populous import generators
 from populous.exceptions import ValidationError
 from populous.factory import ItemFactory
 from populous.vars import parse_vars
+from populous.vars import ValueExpression
 
 ITEM_KEYS = ('name', 'parent', 'table', 'count', 'fields', 'store_in')
 COUNT_KEYS = ('number', 'by', 'min', 'max')
@@ -170,15 +171,33 @@ class Item(object):
         self.generate_dependencies(buffer, objs)
 
     def store_values(self, objs):
+        store_in_global = (
+            (name, expression) for name, expression in self.store_in.items()
+            if '.' not in name
+        )
+
         def _get_values(expression):
             for obj in objs:
                 self.blueprint.vars['this'] = obj
                 yield expression.evaluate(**self.blueprint.vars)
             del self.blueprint.vars['this']
 
-        for name, expression in self.store_in.items():
+        for name, expression in store_in_global:
             store = self.blueprint.vars[name]
             store.extend(_get_values(expression))
+
+        store_in_this = [
+            (ValueExpression(name), expression)
+            for name, expression in self.store_in.items()
+            if '.' in name
+        ]
+
+        for obj in objs:
+            self.blueprint.vars['this'] = obj
+            for name_expr, value_expr in store_in_this:
+                store = name_expr.evaluate(**self.blueprint.vars)
+                store.append(value_expr.evaluate(**self.blueprint.vars))
+        del self.blueprint.vars['this']
 
     def generate(self, buffer, count, parent=None):
         factory = ItemFactory(self, parent=parent)
