@@ -131,9 +131,9 @@ def test_store_in():
                         'store_in': {'foo': '$bar', 'test': 'foo'}})
 
     foo = blueprint.items['foo']
-    assert isinstance(foo.store_in['foo'], ValueExpression)
-    assert foo.store_in['foo'].var == 'bar'
-    assert foo.store_in['test'] == 'foo'
+    assert isinstance(foo.store_in_global['foo'], ValueExpression)
+    assert foo.store_in_global['foo'].var == 'bar'
+    assert foo.store_in_global['test'] == 'foo'
 
 
 def test_inherit_store_in():
@@ -142,11 +142,11 @@ def test_inherit_store_in():
     blueprint.add_item({'name': 'foo', 'table': 'bar',
                         'store_in': {'foo': 'bar'}})
     blueprint.add_item({'name': 'bar', 'parent': 'foo'})
-    assert blueprint.items['bar'].store_in == {'foo': 'bar'}
+    assert blueprint.items['bar'].store_in_global == {'foo': 'bar'}
 
     blueprint.add_item({'name': 'lol', 'parent': 'foo',
                         'store_in': {'test': 'foo'}})
-    assert blueprint.items['lol'].store_in == {'test': 'foo'}
+    assert blueprint.items['lol'].store_in_global == {'test': 'foo'}
 
 
 def test_fields_not_dict():
