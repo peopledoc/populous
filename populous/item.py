@@ -206,12 +206,13 @@ class Item(object):
             store = self.blueprint.vars[name]
             store.extend(_get_values(expression))
 
-        for obj in objs:
-            self.blueprint.vars['this'] = obj
-            for name_expr, value_expr in self.store_in_item.items():
-                store = name_expr.evaluate(**self.blueprint.vars)
-                store.append(value_expr.evaluate(**self.blueprint.vars))
-        del self.blueprint.vars['this']
+        if self.store_in_item:
+            for obj in objs:
+                self.blueprint.vars['this'] = obj
+                for name_expr, value_expr in self.store_in_item.items():
+                    store = name_expr.evaluate(**self.blueprint.vars)
+                    store.append(value_expr.evaluate(**self.blueprint.vars))
+            del self.blueprint.vars['this']
 
     def generate(self, buffer, count, parent=None):
         factory = ItemFactory(self, parent=parent)
