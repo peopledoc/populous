@@ -45,6 +45,7 @@ class ValueExpression(Expression):
             self.attrgetter = attrgetter(attrs)
         else:
             self.attrgetter = None
+        self.attrs = attrs
 
     def evaluate(self, **vars_):
         try:

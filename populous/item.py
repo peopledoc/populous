@@ -10,6 +10,7 @@ from populous import generators
 from populous.exceptions import ValidationError
 from populous.factory import ItemFactory
 from populous.vars import parse_vars
+from populous.vars import ValueExpression
 
 ITEM_KEYS = ('name', 'parent', 'table', 'count', 'fields', 'store_in')
 COUNT_KEYS = ('number', 'by', 'min', 'max')
@@ -22,7 +23,7 @@ class Item(object):
 
         if parent:
             table = table or parent.table
-            store_in = store_in or parent.store_in
+            store_in = store_in or parent._store_in
 
         if not name:
             # if any of our parent had a name we would have inherited it
@@ -37,16 +38,8 @@ class Item(object):
         self.table = table
         self.count = Count(number=0, by=None, min=None, max=None)
         self.fields = OrderedDict()
-
-        if store_in:
-            self.store_in = {
-                name: parse_vars(expression)
-                for name, expression in store_in.items()
-            }
-            for name in self.store_in:
-                self.blueprint.vars.setdefault(name, [])
-        else:
-            self.store_in = {}
+        self._store_in = store_in
+        self._set_store_in(store_in)
 
         self.add_field('id', 'Value', value=None, shadow=True)
 
@@ -69,6 +62,39 @@ class Item(object):
         return tuple(
             name for name, field in self.fields.items() if not field.shadow
         )
+
+    def _set_store_in(self, store_in):
+        if not store_in:
+            self.store_in_global = {}
+            self.store_in_item = {}
+            return
+
+        self.store_in_global = {
+            name: parse_vars(expression)
+            for name, expression in store_in.items()
+            if not name.startswith('this.')
+        }
+        # create the global var in the blueprint
+        for name in self.store_in_global:
+            self.blueprint.vars.setdefault(name, [])
+
+        self.store_in_item = {
+            ValueExpression(name): parse_vars(expression)
+            for name, expression in store_in.items()
+            if name.startswith('this.')
+        }
+        # create a "store" generator on the targeted item
+        for expr in self.store_in_item:
+            target_name, store_name = expr.attrs.rsplit('.')[-2:]
+            try:
+                target = self.blueprint.items[target_name]
+            except KeyError:
+                raise ValidationError(
+                    "Error in 'store_in' section in item '{}': "
+                    "The item '{}' does not exist."
+                    .format(self.name, target_name)
+                )
+            target.add_field(store_name, 'Store')
 
     def add_field(self, name, generator, **params):
         if not generator:
@@ -176,9 +202,17 @@ class Item(object):
                 yield expression.evaluate(**self.blueprint.vars)
             del self.blueprint.vars['this']
 
-        for name, expression in self.store_in.items():
+        for name, expression in self.store_in_global.items():
             store = self.blueprint.vars[name]
             store.extend(_get_values(expression))
+
+        if self.store_in_item:
+            for obj in objs:
+                self.blueprint.vars['this'] = obj
+                for name_expr, value_expr in self.store_in_item.items():
+                    store = name_expr.evaluate(**self.blueprint.vars)
+                    store.append(value_expr.evaluate(**self.blueprint.vars))
+            del self.blueprint.vars['this']
 
     def generate(self, buffer, count, parent=None):
         factory = ItemFactory(self, parent=parent)

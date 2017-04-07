@@ -127,13 +127,50 @@ def test_store_in_not_dict():
 def test_store_in():
     blueprint = Blueprint()
 
+    blueprint.add_item({'name': 'toto', 'table': 'toto'})
     blueprint.add_item({'name': 'foo', 'table': 'bar',
-                        'store_in': {'foo': '$bar', 'test': 'foo'}})
+                        'count': {'by': 'toto'},
+                        'store_in': {
+                            'foo': '$bar',
+                            'test': 'foo',
+                            'this.toto.foos': '$this.id'
+                        }})
 
+    toto = blueprint.items['toto']
     foo = blueprint.items['foo']
-    assert isinstance(foo.store_in['foo'], ValueExpression)
-    assert foo.store_in['foo'].var == 'bar'
-    assert foo.store_in['test'] == 'foo'
+
+    assert isinstance(foo.store_in_global['foo'], ValueExpression)
+    assert foo.store_in_global['foo'].var == 'bar'
+    assert foo.store_in_global['test'] == 'foo'
+
+    assert len(foo.store_in_item) == 1
+    name_expr = foo.store_in_item.keys()[0]
+    assert name_expr.var == 'this'
+    assert name_expr.attrs == 'toto.foos'
+    value_expr = foo.store_in_item.values()[0]
+    assert value_expr.var == 'this'
+    assert value_expr.attrs == 'id'
+
+    assert 'foo' in blueprint.vars
+    assert 'test' in blueprint.vars
+
+    assert 'foos' in toto.fields
+    assert next(toto.fields['foos']) == []
+    assert id(next(toto.fields['foos'])) != id(next(toto.fields['foos']))
+
+
+def test_store_in_non_existing_item():
+    blueprint = Blueprint()
+
+    msg = ("Error in 'store_in' section in item 'foo': The "
+           "item 'toto' does not exist.")
+    with pytest.raises(ValidationError) as e:
+        blueprint.add_item({'name': 'foo', 'table': 'bar',
+                            'count': {'by': 'toto'},
+                            'store_in': {
+                                'this.toto.foos': '$this.id'
+                            }})
+    assert msg in str(e.value)
 
 
 def test_inherit_store_in():
@@ -142,11 +179,11 @@ def test_inherit_store_in():
     blueprint.add_item({'name': 'foo', 'table': 'bar',
                         'store_in': {'foo': 'bar'}})
     blueprint.add_item({'name': 'bar', 'parent': 'foo'})
-    assert blueprint.items['bar'].store_in == {'foo': 'bar'}
+    assert blueprint.items['bar'].store_in_global == {'foo': 'bar'}
 
     blueprint.add_item({'name': 'lol', 'parent': 'foo',
                         'store_in': {'test': 'foo'}})
-    assert blueprint.items['lol'].store_in == {'test': 'foo'}
+    assert blueprint.items['lol'].store_in_global == {'test': 'foo'}
 
 
 def test_fields_not_dict():

@@ -290,11 +290,17 @@ def test_store_values():
 
     blueprint = Blueprint(backend=DummyBackend())
     blueprint.add_item({'name': 'foo', 'table': 'test',
-                        'store_in': {'ids': '$this.id'}})
-    item = blueprint.items['foo']
+                        'store_in': {'foos': '$this'}})
+    blueprint.add_item({'name': 'bar', 'table': 'test2',
+                        'count': {'by': 'foo', 'number': 2},
+                        'store_in': {'this.foo.bar_ids': '$this.id'}})
 
     buffer = Buffer(blueprint)
-    item.generate(buffer, 10)
+    blueprint.items['foo'].generate(buffer, 10)
     buffer.flush()
 
-    assert list(blueprint.vars['ids']) == list(range(10))
+    assert list(foo.id for foo in blueprint.vars['foos']) == list(range(10))
+
+    ids = iter(range(20))
+    for foo in blueprint.vars['foos']:
+        assert foo.bar_ids == [next(ids), next(ids)]
