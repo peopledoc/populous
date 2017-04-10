@@ -216,7 +216,8 @@ def test_select(blueprint, item):
     generator = generators.Select(item, 'foo', table='test')
     assert take(generator, 5) == [1, 2, 3, 1, 2]
 
-    generator = generators.Select(item, 'foo', table='test', where='foo=$bar')
+    generator = generators.Select(item, 'foo', table='test',
+                                  where='foo={{ bar }}')
     blueprint.vars['bar'] = 1
     assert take(generator, 2) == [1, 2]
     blueprint.vars['bar'] = 2
