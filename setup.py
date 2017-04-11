@@ -10,7 +10,8 @@ requirements = [
     "Faker",
     "dateutils",
     "PyYAML",
-    "peloton_bloomfilters"
+    "peloton_bloomfilters",
+    "Jinja2"
 ]
 
 if sys.version_info < (3, 2):
