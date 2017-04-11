@@ -118,7 +118,13 @@ class TemplateExpression(Expression):
 
     def __init__(self, value=""):
         self.value = value
-        self.template = jinja_env.from_string(value)
+        try:
+            self.template = jinja_env.from_string(value)
+        except jinja2.TemplateError as e:
+            raise ValidationError(
+                "Error parsing template '{}': {}"
+                .format(value, e)
+            )
 
     def evaluate(self, **vars_):
         try:

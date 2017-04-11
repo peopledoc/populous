@@ -151,6 +151,12 @@ def test_jinja_value_expression():
     msg = "Error generating value '$(a.toto)': 'None' has no attribute 'toto'"
     assert msg in str(e.value)
 
+    with pytest.raises(ValidationError) as e:
+        v = JinjaValueExpression('foo|')
+    msg = ("Error parsing '$(foo|)': Invalid Jinja2 expression (unexpected "
+           "end of template, expected 'name'.)")
+    assert msg in str(e.value)
+
 
 def test_template_expression():
     from populous.vars import TemplateExpression
@@ -185,6 +191,12 @@ def test_template_expression():
 1 x
 2 x
 """
+
+    with pytest.raises(ValidationError) as e:
+        t = TemplateExpression('{{ foo')
+    msg = ("Error parsing template '{{ foo': unexpected end of "
+           "template, expected 'end of print statement'.")
+    assert msg in str(e.value)
 
     t = TemplateExpression('{{ foo }}')
     with pytest.raises(GenerationError) as e:
