@@ -521,3 +521,34 @@ def test_url(item):
     assert all('.' in e for e in sample)
     assert all(e.startswith('http') for e in sample)
     assert all(not e.endswith('/') for e in sample)
+
+
+def test_yaml(blueprint, item):
+    generator = generators.Yaml(item, 'foo', value="42")
+    assert take(generator, 2) == [42, 42]
+
+    value = """
+    foo:
+        {% for i in range(3) %}
+        {{ i }}: {{ var }}
+        {% endfor %}
+    """
+    generator = generators.Yaml(item, 'foo', value=value)
+    blueprint.vars['var'] = 'bar'
+    assert next(generator) == {'foo': {0: 'bar', 1: 'bar', 2: 'bar'}}
+    blueprint.vars['var'] = 42
+    assert next(generator) == {'foo': {0: 42, 1: 42, 2: 42}}
+
+    generator = generators.Yaml(item, 'foo', value='"foo')
+    with pytest.raises(GenerationError) as e:
+        next(generator)
+    assert "Item 'item', field 'foo': Invalid YAML: " in str(e.value)
+
+    class DummyBackend(Backend):
+        @property
+        def json_adapter(self):
+            return lambda v: 'bar'
+
+    blueprint.backend = DummyBackend()
+    generator = generators.Yaml(item, 'foo', value="{'foo': 42}", to_json=True)
+    assert take(generator, 2) == ['bar', 'bar']
