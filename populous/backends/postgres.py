@@ -32,6 +32,8 @@ class Postgres(Backend):
 
         # authorize uuids objects in queries
         psycopg2.extras.register_uuid()
+        # authorize dicts objects for hstore in queries
+        psycopg2.extras.register_hstore(self.conn)
 
     @property
     def json_adapter(self):
