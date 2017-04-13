@@ -187,11 +187,12 @@ def test_choices_empty(blueprint, item):
     sample = take(generator, 10)
     assert sample == [None] * 10
 
+    generator.nullable = 0
+
     blueprint.vars['test'] = ['foo']
     assert take(generator, 1) == ['foo']
 
     blueprint.vars['test'] = []
-    generator.nullable = 0
     with pytest.raises(GenerationError) as e:
         take(generator, 1)
     msg = ("The choices for field 'foo' of item 'item' are empty, and the "
