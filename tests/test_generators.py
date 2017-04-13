@@ -135,7 +135,7 @@ def test_unique_together(blueprint, item):
     assert msg in str(e.value)
 
 
-def test_integer(item):
+def test_integer(blueprint, item):
     generator = generators.Integer(item, 'foo')
     sample = take(generator, 10)
     assert len(sample) == 10
@@ -146,6 +146,13 @@ def test_integer(item):
 
     generator = generators.Integer(item, 'foo', min=10, max=100)
     assert all(10 <= e <= 100 for e in take(generator, 1000))
+
+    generator = generators.Integer(item, 'foo', min='$min', max='$max')
+    blueprint.vars['min'] = 10
+    blueprint.vars['max'] = 20
+    assert all(10 <= e <= 20 for e in take(generator, 100))
+    blueprint.vars['min'] = 15
+    assert all(15 <= e <= 20 for e in take(generator, 100))
 
 
 def test_choices(blueprint, item):

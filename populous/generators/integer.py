@@ -1,5 +1,6 @@
 import random
 
+from populous.vars import parse_vars
 from .base import Generator
 
 
@@ -9,8 +10,8 @@ class Integer(Generator):
                       **kwargs):
         super(Integer, self).get_arguments(**kwargs)
 
-        self.min = min
-        self.max = max
+        self.min = parse_vars(min)
+        self.max = parse_vars(max)
         self.to_string = to_string
 
     def generate(self):
@@ -20,4 +21,7 @@ class Integer(Generator):
 
     def _generate(self):
         while True:
-            yield random.randint(self.min, self.max)
+            yield random.randint(
+                self.evaluate(self.min),
+                self.evaluate(self.max)
+            )
