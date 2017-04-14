@@ -44,6 +44,9 @@ def test_item_preprocess(mocker):
     item.add_field('lastname', 'Text')
     item.add_field('birth', 'Date')
     item.add_field('gender', 'Choices', choices=['M', 'F'])
+    # add a unique field, but which isn't present in the db (shadow)
+    item.add_field('parent', 'Choices', shadow=True, choices='$parents',
+                   unique=['birth'])
 
     item.preprocess()
     assert blueprint.backend.select.call_args == mocker.call(

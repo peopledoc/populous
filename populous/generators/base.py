@@ -109,11 +109,13 @@ class UniquenessMixin(object):
         unique_with = self.unique_with
         tries = 0
         for value in super(UniquenessMixin, self).get_generator():
-            if unique_with:
-                this = self.blueprint.vars['this']
-                key = (value,) + tuple(getattr(this, f) for f in unique_with)
+            if isinstance(value, tuple) and hasattr(value, 'id'):
+                key = value.id
             else:
                 key = value
+            if unique_with:
+                this = self.blueprint.vars['this']
+                key = (key,) + tuple(getattr(this, f) for f in unique_with)
             if key in seen:
                 tries += 1
                 if tries > self.MAX_TRIES:

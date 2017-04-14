@@ -171,7 +171,7 @@ class Item(object):
         db_fields = []
         to_fill = []
         for field in self.fields.values():
-            if not getattr(field, 'unique'):
+            if field.shadow or not getattr(field, 'unique'):
                 continue
 
             index = len(db_fields)
