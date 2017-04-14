@@ -228,9 +228,11 @@ def test_generate_dependencies():
     blueprint.add_item({'name': 'foo', 'table': 'test'})
     blueprint.add_item({'name': 'bar', 'table': 'test',
                         'count': {'number': 2, 'by': 'foo'},
+                        'store_in': {'bars': '$this'},
                         'fields': {'parent_id': '$this.foo.id'}})
     blueprint.add_item({'name': 'lol', 'table': 'test',
                         'count': {'min': 1, 'max': 2, 'by': 'foo'},
+                        'store_in': {'lols': '$this'},
                         'fields': {'parent_id': '$this.foo.id'}})
     blueprint.add_item({'name': 'abc', 'table': 'test'})
     blueprint.add_item({'name': 'baz', 'table': 'test',
@@ -244,15 +246,18 @@ def test_generate_dependencies():
     buffer.write(foo)
     assert list(buffer.buffers.keys()) == ['foo', 'bar', 'lol']
     assert len(buffer.buffers['foo']) == 0
-    assert len(buffer.buffers['bar']) == 20
-    assert 10 <= len(buffer.buffers['lol']) <= 20
+    assert len(buffer.buffers['bar']) == 0
+    assert len(buffer.buffers['lol']) == 0
+
+    assert len(blueprint.vars['bars']) == 20
+    assert 10 <= len(blueprint.vars['lols']) <= 20
 
     def ids():
         for x in xrange(10):
             yield x
             yield x
 
-    for x, bar in zip(ids(), buffer.buffers['bar']):
+    for x, bar in zip(ids(), blueprint.vars['bars']):
         assert bar.parent_id == x
         assert bar.foo.id == x
 
@@ -268,6 +273,7 @@ def test_generate_dependencies_ancestors():
     blueprint.add_item({'name': 'foo3', 'parent': 'foo2'})
     blueprint.add_item({'name': 'bar', 'table': 'test',
                         'count': {'number': 2, 'by': 'foo'},
+                        'store_in': {'bars': '$this'},
                         'fields': {'parent_id': '$this.foo.id'}})
 
     buffer = Buffer(blueprint)
@@ -281,13 +287,15 @@ def test_generate_dependencies_ancestors():
     assert list(buffer.buffers.keys()) == ['foo3', 'foo2', 'bar']
     assert len(buffer.buffers['foo2']) == 2
     assert len(buffer.buffers['foo3']) == 0
-    assert len(buffer.buffers['bar']) == 4
+    assert len(buffer.buffers['bar']) == 0
+    assert len(blueprint.vars['bars']) == 4
 
     buffer.write(foo2, buffer.buffers['foo2'])
     assert list(buffer.buffers.keys()) == ['foo3', 'foo2', 'bar']
     assert len(buffer.buffers['foo2']) == 0
     assert len(buffer.buffers['foo3']) == 0
-    assert len(buffer.buffers['bar']) == 8
+    assert len(buffer.buffers['bar']) == 0
+    assert len(blueprint.vars['bars']) == 8
 
 
 def test_store_values():
