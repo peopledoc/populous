@@ -234,6 +234,7 @@ class Item(object):
                     count = item.count()
                     if count:
                         item.generate(buffer, count, parent=obj)
+                buffer.write(item)
 
     def db_values(self, obj):
         return tuple(getattr(obj, field) for field in self.db_fields)
