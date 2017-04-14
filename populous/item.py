@@ -231,7 +231,9 @@ class Item(object):
         for item in self.blueprint.items.values():
             if item.count.by in names:
                 for obj in batch:
-                    item.generate(buffer, item.count(), parent=obj)
+                    count = item.count()
+                    if count:
+                        item.generate(buffer, count, parent=obj)
 
     def db_values(self, obj):
         return tuple(getattr(obj, field) for field in self.db_fields)
