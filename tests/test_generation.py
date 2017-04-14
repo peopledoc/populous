@@ -124,6 +124,7 @@ def test_item_generate_this_var(mocker):
     def _generate(self):
         call_count['count'] += 1
         assert self.blueprint.vars['this'] == self
+        return item.namedtuple(id=1)
 
     mocker.patch.object(ItemFactory, 'generate', _generate)
     buffer = Buffer(blueprint)
@@ -236,10 +237,11 @@ def test_generate_dependencies():
                         'count': {'number': 20, 'by': 'abc'}})
 
     buffer = Buffer(blueprint)
-    blueprint.items['foo'].generate(buffer, 10)
+    foo = blueprint.items['foo']
+    foo.generate(buffer, 10)
     assert list(buffer.buffers.keys()) == ['foo']
 
-    buffer.write('foo', buffer.buffers['foo'])
+    buffer.write(foo)
     assert list(buffer.buffers.keys()) == ['foo', 'bar', 'lol']
     assert len(buffer.buffers['foo']) == 0
     assert len(buffer.buffers['bar']) == 20
@@ -269,17 +271,19 @@ def test_generate_dependencies_ancestors():
                         'fields': {'parent_id': '$this.foo.id'}})
 
     buffer = Buffer(blueprint)
-    blueprint.items['foo3'].generate(buffer, 2)
-    blueprint.items['foo2'].generate(buffer, 2)
+    foo2 = blueprint.items['foo2']
+    foo3 = blueprint.items['foo3']
+    foo3.generate(buffer, 2)
+    foo2.generate(buffer, 2)
     assert list(buffer.buffers.keys()) == ['foo3', 'foo2']
 
-    buffer.write('foo3', buffer.buffers['foo3'])
+    buffer.write(foo3, buffer.buffers['foo3'])
     assert list(buffer.buffers.keys()) == ['foo3', 'foo2', 'bar']
     assert len(buffer.buffers['foo2']) == 2
     assert len(buffer.buffers['foo3']) == 0
     assert len(buffer.buffers['bar']) == 4
 
-    buffer.write('foo2', buffer.buffers['foo2'])
+    buffer.write(foo2, buffer.buffers['foo2'])
     assert list(buffer.buffers.keys()) == ['foo3', 'foo2', 'bar']
     assert len(buffer.buffers['foo2']) == 0
     assert len(buffer.buffers['foo3']) == 0
