@@ -135,6 +135,28 @@ def test_unique_together(blueprint, item):
     assert msg in str(e.value)
 
 
+def test_unique_item(blueprint, item):
+    # add a field with a non-hashable value
+    item.add_field('bar', 'Value', value=[], shadow=True)
+
+    # add some generated items in a var
+    blueprint.vars['bars'] = [item.namedtuple(id=1, bar=[]),
+                              item.namedtuple(id=2, bar=[])]
+
+    # unique generator, where the values are items, we should use the id
+    generator = generators.Choices(item, 'foo', choices='$bars', shadow=True,
+                                   unique=True)
+    assert sorted(take(generator, 2)) == sorted(blueprint.vars['bars'])
+    assert 1 in generator.seen
+    assert 2 in generator.seen
+
+    msg = ("Item 'item', field 'foo': Could not generate a new unique "
+           "value in 10000 tries. Aborting.")
+    with pytest.raises(GenerationError) as e:
+        take(generator, 1)
+    assert msg in str(e.value)
+
+
 def test_integer(blueprint, item):
     generator = generators.Integer(item, 'foo')
     sample = take(generator, 10)
