@@ -154,6 +154,24 @@ def test_write_buffer(mocker):
     assert item.generate_dependencies.call_args == mocker.call(buffer, objs)
 
 
+def test_write_empty_buffer(mocker):
+    blueprint = Blueprint(backend=Backend())
+    blueprint.add_item({'name': 'foo', 'table': 'test', 'fields': {'a': 42}})
+    item = blueprint.items['foo']
+
+    mocker.patch.object(blueprint.backend, 'write')
+
+    buffer = Buffer(blueprint)
+    # the buffer for the item doesn't exist
+    buffer.write(item)
+    assert not blueprint.backend.write.called
+
+    buffer.get_buffer(item)
+    # the buffer for the item is empty
+    buffer.write(item)
+    assert not blueprint.backend.write.called
+
+
 def test_flush_buffer(mocker):
     blueprint = Blueprint(backend=mocker.MagicMock())
     blueprint.add_item({'name': 'foo', 'table': 'test'})
