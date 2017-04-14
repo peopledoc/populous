@@ -10,31 +10,32 @@ class Buffer(object):
         self.buffers = OrderedDict()
 
     def add(self, obj):
-        item_name = type(obj).__name__
-        buffer = self.get_buffer(item_name)
+        item = self.blueprint.items[type(obj).__name__]
+        buffer = self.get_buffer(item)
         buffer.append(obj)
 
         if len(buffer) == self.maxlen:
-            self.write(item_name, buffer)
+            self.write(item, buffer)
 
     def flush(self):
         while any(self.buffers.values()):
             for item_name, buffer in self.buffers.items():
-                if buffer:
-                    self.write(item_name, buffer)
+                self.write(self.blueprint.items[item_name], buffer)
 
-    def write(self, item_name, buffer):
-        item = self.blueprint.items[item_name]
+    def write(self, item, buffer=None):
+        buffer = buffer or self.get_buffer(item)
+        if not buffer:
+            return
         ids = self.backend.write(
             item, tuple(item.db_values(obj) for obj in buffer)
         )
         item.batch_written(self, buffer, ids)
         buffer.clear()
 
-    def get_buffer(self, item_name):
+    def get_buffer(self, item):
         try:
-            return self.buffers[item_name]
+            return self.buffers[item.name]
         except KeyError:
             buffer = deque(maxlen=self.maxlen)
-            self.buffers[item_name] = buffer
+            self.buffers[item.name] = buffer
             return buffer
