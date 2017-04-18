@@ -86,6 +86,8 @@ class Blueprint(object):
             pass
         elif isinstance(count, int):
             item.add_count(number=count)
+        elif isinstance(count, basestring) and count[0] == '$':
+            item.add_count(number=count)
         else:
             if not isinstance(count, dict):
                 raise ValidationError(
