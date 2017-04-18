@@ -10,6 +10,7 @@ from populous import generators
 from populous.exceptions import ValidationError
 from populous.factory import ItemFactory
 from populous.vars import parse_vars
+from populous.vars import Expression
 from populous.vars import ValueExpression
 
 ITEM_KEYS = ('name', 'parent', 'table', 'count', 'fields', 'store_in')
@@ -36,7 +37,9 @@ class Item(object):
 
         self.name = name
         self.table = table
-        self.count = Count(number=0, by=None, min=None, max=None)
+        self.count = Count(
+            number=0, by=None, min=None, max=None, blueprint=blueprint
+        )
         self.fields = OrderedDict()
         self._store_in = store_in
         self._set_store_in(store_in)
@@ -124,18 +127,24 @@ class Item(object):
         self.fields[name] = generator_cls(self, name, **params)
 
     def add_count(self, number=None, by=None, min=None, max=None):
+        number = parse_vars(number)
+        min = parse_vars(min)
+        max = parse_vars(max)
+
         for key, value in zip(('number', 'min', 'max'), (number, min, max)):
             if value is None:
                 continue
-            if not isinstance(value, int):
+            if isinstance(value, int):
+                if value < 0:
+                    raise ValidationError(
+                        "Item '{}' count: {} must be positive."
+                        .format(self.name, key)
+                    )
+            elif not isinstance(value, Expression):
                 raise ValidationError(
-                    "Item '{}' count: {} must be an integer (got: '{}')."
+                    "Item '{}' count: {} must be an integer or a variable "
+                    "(got: '{}')."
                     .format(self.name, key, type(value).__name__)
-                )
-            if value < 0:
-                raise ValidationError(
-                    "Item '{}' count: {} must be positive."
-                    .format(self.name, key)
                 )
 
         current_count = self.count
@@ -159,13 +168,15 @@ class Item(object):
         min = min or 0
         max = max or 0
 
-        if min > max:
+        if isinstance(min, int) and isinstance(max, int) and min > max:
             raise ValidationError(
                 "Item '{}' count: Min is greater than max."
                 .format(self.name)
             )
 
-        self.count = Count(number=number, by=by, min=min, max=max)
+        self.count = Count(
+            number=number, by=by, min=min, max=max, blueprint=self.blueprint
+        )
 
     def preprocess(self):
         db_fields = []
@@ -229,9 +240,12 @@ class Item(object):
         # or one of its ancestors
         names = frozenset(self.ancestors) | {self.name}
         for item in self.blueprint.items.values():
-            if item.count.by in names:
+            by = item.count.by
+            if by in names:
                 for obj in batch:
+                    self.blueprint.vars[by] = obj
                     count = item.count()
+                    del self.blueprint.vars[by]
                     if count:
                         item.generate(buffer, count, parent=obj)
                 buffer.write(item)
@@ -240,10 +254,15 @@ class Item(object):
         return tuple(getattr(obj, field) for field in self.db_fields)
 
 
-class Count(namedtuple('Count', COUNT_KEYS)):
+class Count(namedtuple('Count', COUNT_KEYS + ('blueprint',))):
     __slots__ = ()
+
+    def evaluate(self, value):
+        if isinstance(value, Expression):
+            return value.evaluate(**self.blueprint.vars)
+        return value
 
     def __call__(self):
         if self.number is not None:
-            return self.number
-        return random.randint(self.min, self.max)
+            return self.evaluate(self.number)
+        return random.randint(self.evaluate(self.min), self.evaluate(self.max))

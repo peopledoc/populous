@@ -316,6 +316,31 @@ def test_generate_dependencies_ancestors():
     assert len(blueprint.vars['bars']) == 8
 
 
+def test_generate__count_with_var():
+    class DummyBackend(Backend):
+        def write(self, item, objs):
+            return range(len(objs))
+
+    blueprint = Blueprint(backend=DummyBackend())
+    blueprint.add_item({'name': 'foo', 'table': 'test',
+                        'fields': {'nb_bars': {
+                            'generator': 'Integer', 'min': 1, 'max': 10
+                        }},
+                        'store_in': {'foos': '$this'}})
+    blueprint.add_item({'name': 'bar', 'table': 'test',
+                        'count': {'number': '$foo.nb_bars', 'by': 'foo'},
+                        'store_in': {'this.foo.bars': '$this'}})
+
+    buffer = Buffer(blueprint)
+    blueprint.items['foo'].generate(buffer, 10)
+    buffer.flush()
+
+    assert len(blueprint.vars['foos']) == 10
+    for foo in blueprint.vars['foos']:
+        assert 1 <= foo.nb_bars <= 10
+        assert len(foo.bars) == foo.nb_bars
+
+
 def test_store_values():
     class DummyBackend(Backend):
         def write(self, item, objs):

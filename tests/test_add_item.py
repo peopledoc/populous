@@ -348,6 +348,20 @@ def test_count_valid():
     assert blueprint.items['test3'].count.by == 'foo'
 
 
+def test_count_var():
+    blueprint = Blueprint()
+
+    blueprint.add_item({'name': 'test1', 'table': 'bar', 'count': '$foo'})
+    blueprint.vars['foo'] = 42
+    assert blueprint.items['test1'].count() == 42
+
+    blueprint.add_item({'name': 'test2', 'table': 'bar',
+                        'count': {'min': '$min', 'max': '$max'}})
+    blueprint.vars['min'] = 1
+    blueprint.vars['max'] = 10
+    assert 1 <= blueprint.items['test2'].count() <= 10
+
+
 def test_count_invalid():
     blueprint = Blueprint()
 
@@ -363,7 +377,8 @@ def test_count_invalid():
                             'count': {'test': 'bar'}})
     assert msg in str(e.value)
 
-    msg = "Item 'foo' count: number must be an integer (got: 'str')."
+    msg = ("Item 'foo' count: number must be an integer or a variable (got: "
+           "'str').")
     with pytest.raises(ValidationError) as e:
         blueprint.add_item({'name': 'foo', 'table': 'bar',
                             'count': {'number': '42'}})
