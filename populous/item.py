@@ -240,9 +240,12 @@ class Item(object):
         # or one of its ancestors
         names = frozenset(self.ancestors) | {self.name}
         for item in self.blueprint.items.values():
-            if item.count.by in names:
+            by = item.count.by
+            if by in names:
                 for obj in batch:
+                    self.blueprint.vars[by] = obj
                     count = item.count()
+                    del self.blueprint.vars[by]
                     if count:
                         item.generate(buffer, count, parent=obj)
                 buffer.write(item)
