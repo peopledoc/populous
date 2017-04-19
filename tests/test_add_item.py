@@ -426,19 +426,26 @@ def test_count_inheritance():
     assert blueprint.items['test4'].count.by == 'foo'
     assert blueprint.items['test4'].count.number == 42
 
-    # we can change by or min/max
+    # we can change by and min/max
     blueprint.add_item({'name': 'test5', 'parent': 'bar',
                         'count': {'by': 'bar', 'min': 20}})
     assert blueprint.items['test5'].count.min == 20
     assert blueprint.items['test5'].count.max == 100
     assert blueprint.items['test5'].count.by == 'bar'
 
-    # we can set min and max to 0
+    # we can change only min/max
     blueprint.add_item({'name': 'test6', 'parent': 'bar',
-                        'count': {'min': 0, 'max': 0}})
-    assert blueprint.items['test6'].count.min == 0
-    assert blueprint.items['test6'].count.max == 0
+                        'count': {'max': 20}})
+    assert blueprint.items['test6'].count.min == 10
+    assert blueprint.items['test6'].count.max == 20
     assert blueprint.items['test6'].count.by == 'foo'
+
+    # we can set min and max to 0
+    blueprint.add_item({'name': 'test7', 'parent': 'bar',
+                        'count': {'min': 0, 'max': 0}})
+    assert blueprint.items['test7'].count.min == 0
+    assert blueprint.items['test7'].count.max == 0
+    assert blueprint.items['test7'].count.by == 'foo'
 
 
 def test_add_var():
