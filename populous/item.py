@@ -51,7 +51,15 @@ class Item(object):
                 self.add_field(name, type(field).__name__, **field.kwargs)
             self.count = parent.count
 
-        self.ancestors = parent.ancestors + [parent.name] if parent else []
+        if parent:
+            self.ancestors = parent.ancestors
+            # only add parent to ancestors if it will not be generated
+            # otherwise we would generate our children for both our parent
+            # and us
+            if parent.count.number == 0:
+                self.ancestors += [parent.name]
+        else:
+            self.ancestors = []
 
     @cached_property
     def namedtuple(self):
@@ -154,8 +162,10 @@ class Item(object):
             if min is None and max is None:
                 number = number or current_count.number
             if number is None:
-                min = min or current_count.min
-                max = max or current_count.max
+                if min is None:
+                    min = current_count.min
+                if max is None:
+                    max = current_count.max
 
         if min is not None or max is not None:
             if number is not None:

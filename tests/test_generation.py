@@ -301,19 +301,59 @@ def test_generate_dependencies_ancestors():
     foo2.generate(buffer, 2)
     assert list(buffer.buffers.keys()) == ['foo3', 'foo2']
 
-    buffer.write(foo3, buffer.buffers['foo3'])
+    buffer.write(foo3)
     assert list(buffer.buffers.keys()) == ['foo3', 'foo2', 'bar']
     assert len(buffer.buffers['foo2']) == 2
     assert len(buffer.buffers['foo3']) == 0
     assert len(buffer.buffers['bar']) == 0
     assert len(blueprint.vars['bars']) == 4
 
-    buffer.write(foo2, buffer.buffers['foo2'])
+    buffer.write(foo2)
     assert list(buffer.buffers.keys()) == ['foo3', 'foo2', 'bar']
     assert len(buffer.buffers['foo2']) == 0
     assert len(buffer.buffers['foo3']) == 0
     assert len(buffer.buffers['bar']) == 0
     assert len(blueprint.vars['bars']) == 8
+
+
+def test_generate_dependencies_tree():
+    class DummyBackend(Backend):
+        def write(self, item, objs):
+            return range(len(objs))
+
+    blueprint = Blueprint(backend=DummyBackend())
+
+    # definition without count
+    blueprint.add_item({'name': 'foo', 'table': 'test'})
+    # root
+    blueprint.add_item({'name': 'foo1', 'parent': 'foo',
+                        'store_in': {'foo1s': '$this'},
+                        'count': {'number': 2}})
+    # level 2
+    blueprint.add_item({'name': 'foo2', 'parent': 'foo1',
+                        'store_in': {'foo2s': '$this'},
+                        'count': {'number': 2, 'by': 'foo1'}})
+    # level 3
+    blueprint.add_item({'name': 'foo3', 'parent': 'foo2',
+                        'store_in': {'foo3s': '$this'},
+                        'count': {'number': 2, 'by': 'foo2'}})
+    # item created for each foo (root or level)
+    blueprint.add_item({'name': 'bar', 'table': 'test',
+                        'store_in': {'bars': '$this'},
+                        'count': {'number': 1, 'by': 'foo'}})
+
+    buffer = Buffer(blueprint)
+    foo1 = blueprint.items['foo1']
+    foo1.generate(buffer, foo1.count())
+    assert list(buffer.buffers.keys()) == ['foo1']
+
+    buffer.write(foo1)
+    assert list(buffer.buffers.keys()) == ['foo1', 'foo2', 'foo3', 'bar']
+
+    assert len(blueprint.vars['foo1s']) == 2
+    assert len(blueprint.vars['foo2s']) == 4
+    assert len(blueprint.vars['foo3s']) == 8
+    assert len(blueprint.vars['bars']) == 14
 
 
 def test_generate__count_with_var():
