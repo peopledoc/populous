@@ -51,7 +51,15 @@ class Item(object):
                 self.add_field(name, type(field).__name__, **field.kwargs)
             self.count = parent.count
 
-        self.ancestors = parent.ancestors + [parent.name] if parent else []
+        if parent:
+            self.ancestors = parent.ancestors
+            # only add parent to ancestors if it will not be generated
+            # otherwise we would generate our children for both our parent
+            # and us
+            if parent.count.number == 0:
+                self.ancestors += [parent.name]
+        else:
+            self.ancestors = []
 
     @cached_property
     def namedtuple(self):
