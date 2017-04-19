@@ -127,7 +127,7 @@ class UniquenessMixin(object):
                     )
                 continue
             tries = 0
-            seen.add(key)
+            seen.add(key, check=False)
             yield value
 
 
