@@ -18,7 +18,7 @@ def test_bloom_filter():
 
 
 def test_error_rate():
-    bf = BloomFilter(step=1000, errors=0.01)
+    bf = BloomFilter(capacity=1000, error_rate=0.01)
 
     for x in xrange(1000):
         bf.add(x)
@@ -35,7 +35,7 @@ def test_error_rate():
 
 
 def test_extend_bloom_filter():
-    bf = BloomFilter(step=100)
+    bf = BloomFilter(capacity=100)
 
     for key in xrange(99):
         bf.add(key)
@@ -54,7 +54,9 @@ def test_extend_bloom_filter():
     for key in xrange(1000):
         bf.add(key)
 
-    assert len(bf._filters) == 10
+    # the capacity quadruples each time
+    assert len(bf._filters) == 3
+    assert bf._capacity == 1600
 
     for key in xrange(1000):
         assert key in bf
