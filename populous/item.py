@@ -162,8 +162,10 @@ class Item(object):
             if min is None and max is None:
                 number = number or current_count.number
             if number is None:
-                min = min or current_count.min
-                max = max or current_count.max
+                if min is None:
+                    min = current_count.min
+                if max is None:
+                    max = current_count.max
 
         if min is not None or max is not None:
             if number is not None:
