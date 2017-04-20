@@ -1,5 +1,6 @@
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 
+from populous.bloom import BloomFilter
 from populous.buffer import Buffer
 from populous.exceptions import ValidationError
 from populous.item import Item, COUNT_KEYS, ITEM_KEYS
@@ -11,6 +12,10 @@ class Blueprint(object):
         self.items = OrderedDict(items or {})
         self.vars = vars_ or {}
         self.backend = backend
+
+        # a dict containing {<table>: {<fields>: bloom filter}}
+        # to store the existing values of unique fields
+        self.seen = defaultdict(lambda: defaultdict(BloomFilter))
 
     def add_var(self, name, value):
         self.vars[name] = value

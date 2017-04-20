@@ -97,6 +97,9 @@ class UniquenessMixin(object):
             self.unique_with = (unique,)
         else:
             self.unique_with = None
+
+        # default bloomfilter, used if for some reason a pre-filled
+        # one is not assigned in Item.preprocess
         self.seen = BloomFilter()
 
     def get_generator(self):

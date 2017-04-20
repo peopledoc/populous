@@ -24,6 +24,7 @@ def test_blueprint_preprocess(mocker):
 
 
 def test_item_preprocess(mocker):
+    columns = ('id', 'firstname', 'lastname', 'birth', 'gender')
     existing = (
         (1, 'Homer', 'Simpson', date(1956, 6, 18), 'M'),
         (2, 'Marge', 'Simpson', date(1959, 6, 29), 'F'),
@@ -33,8 +34,9 @@ def test_item_preprocess(mocker):
     )
 
     class DummyBackend(Backend):
-        def select(self, *args, **kwargs):
-            return iter(existing)
+        def select(self, table, fields, **kwargs):
+            for row in existing:
+                yield tuple(row[columns.index(field)] for field in fields)
 
     blueprint = Blueprint(backend=mocker.Mock(wraps=DummyBackend()))
     item = Item(blueprint, 'person', 'test')
@@ -60,6 +62,63 @@ def test_item_preprocess(mocker):
     assert ('Homer', 'Simpson', date(1956, 6, 18)) in seen
     assert ('Lisa', 'Simpson', date(1984, 5, 9)) in seen
     assert ('Bart', 'Simpson', date(2016, 10, 9)) not in seen
+
+    # add an item using the same table
+    item2 = Item(blueprint, 'person2', 'test')
+    item2.add_field('firstname', 'Text', unique=['lastname', 'birth'])
+    item2.add_field('lastname', 'Text')
+    # for this item, the date is unique
+    item2.add_field('birth', 'Date', unique=True)
+
+    blueprint.backend.select.reset_mock()
+    item2.preprocess()
+    # we should have queried only the birth
+    assert blueprint.backend.select.call_args == mocker.call('test', ['birth'])
+
+    seen = item2.fields['birth'].seen
+    assert date(1956, 6, 18) in seen
+
+    # we should use the same filter than for person
+    seen = item2.fields['firstname'].seen
+    assert ('Homer', 'Simpson', date(1956, 6, 18)) in seen
+
+
+def test_item_preprocess_two_tables(mocker):
+    class DummyBackend(Backend):
+        def select(self, table, *args, **kwargs):
+            if table == 'test1':
+                return ['a', 'b', 'c']
+            else:
+                return ['1', '2', '3']
+
+    blueprint = Blueprint(backend=mocker.Mock(wraps=DummyBackend()))
+
+    foo = Item(blueprint, 'foo', 'test1')
+    foo.add_field('code', 'Text', unique=True)
+
+    bar = Item(blueprint, 'bar', 'test2')
+    bar.add_field('code', 'Text', unique=True)
+
+    bar2 = Item(blueprint, 'bar', 'test2')
+    bar2.add_field('code', 'Text', unique=True)
+
+    foo.preprocess()
+    assert blueprint.backend.select.call_args == mocker.call('test1', ['code'])
+    assert 'a' in foo.fields['code'].seen
+    assert '1' not in foo.fields['code'].seen
+
+    # same field name, but different table
+    blueprint.backend.select.reset_mock()
+    bar.preprocess()
+    assert blueprint.backend.select.call_args == mocker.call('test2', ['code'])
+    assert 'a' not in bar.fields['code'].seen
+    assert '1' in bar.fields['code'].seen
+
+    # same field name and table
+    blueprint.backend.select.reset_mock()
+    bar2.preprocess()
+    assert blueprint.backend.select.call_args is None
+    assert bar2.fields['code'].seen == bar.fields['code'].seen
 
 
 def test_blueprint_generate(mocker):
