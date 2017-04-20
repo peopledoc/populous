@@ -189,6 +189,7 @@ class Item(object):
         )
 
     def preprocess(self):
+        seen_fields = self.blueprint.seen[self.table]
         db_fields = []
         to_fill = []
         for field in self.fields.values():
@@ -197,12 +198,17 @@ class Item(object):
 
             index = len(db_fields)
             if field.unique_with:
-                fields = (field.field_name,) + field.unique_with
-                db_fields += fields
-                to_fill.append((field, slice(index, index + len(fields))))
+                fields = (field.field_name,) + tuple(field.unique_with)
+                if fields not in seen_fields:
+                    db_fields += fields
+                    to_fill.append((field, slice(index, index + len(fields))))
+                field.seen = seen_fields[fields]
             else:
-                db_fields.append(field.field_name)
-                to_fill.append((field, index))
+                field_name = field.field_name
+                if field_name not in seen_fields:
+                    db_fields.append(field_name)
+                    to_fill.append((field, index))
+                field.seen = seen_fields[field_name]
 
         if not db_fields:
             return
