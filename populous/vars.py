@@ -5,10 +5,8 @@ import jinja2
 
 from populous.exceptions import GenerationError
 from populous.exceptions import ValidationError
+from populous.jinja import jinja_env
 
-
-jinja_env = jinja2.Environment()
-jinja_env.undefined = jinja2.StrictUndefined
 
 VAR_REGEX = re.compile(r'^[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*$')
 
