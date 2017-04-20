@@ -210,3 +210,21 @@ def test_template_expression():
     msg = ("Error generating template '{{ foo.bar }}': 'int object' has no "
            "attribute 'bar'")
     assert msg in str(e.value)
+
+
+def test_jinja_random():
+    from populous.vars import JinjaValueExpression
+    from populous.vars import TemplateExpression
+
+    j = JinjaValueExpression('[21, 42]|random')
+    assert set(j.evaluate() for _ in xrange(100)) == set((21, 42))
+
+    j = JinjaValueExpression('[]|random')
+    with pytest.raises(GenerationError) as e:
+        j.evaluate()
+    msg = ("Error generating value '$([]|random)': No random item, sequence "
+           "was empty.")
+    assert msg in str(e.value)
+
+    t = TemplateExpression('{{ [21, 42]|random }}')
+    assert set(t.evaluate() for _ in xrange(100)) == set(("21", "42"))
