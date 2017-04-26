@@ -1,5 +1,7 @@
 import socket
 from itertools import islice
+from datetime import datetime
+from contextlib import contextmanager
 
 import pytest
 
@@ -9,6 +11,15 @@ from populous.exceptions import ValidationError
 from populous import generators
 from populous.generators.base import NullableMixin
 from populous.generators.base import UniquenessMixin
+from populous.generators.date import to_timestamp
+
+
+@contextmanager
+def not_raises(exception):
+    try:
+        yield
+    except exception:
+        raise pytest.fail("DID RAISE {0}".format(exception))
 
 
 def take(generator, length=100):
@@ -437,6 +448,14 @@ def test_date(blueprint, item):
     months = set(e.month for e in sample)
     for month in range(1, 12):
         assert month in months
+
+
+def test_epoch():
+    with not_raises(OverflowError):
+        to_timestamp(datetime(generators.DateTime.epoch_year, 1, 1))
+
+    with not_raises(OverflowError):
+        to_timestamp(datetime(generators.Date.epoch_year, 1, 1))
 
 
 def test_name(item):
