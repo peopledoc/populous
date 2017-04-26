@@ -3,9 +3,9 @@ from django.db import models
 
 ABODE_TYPES = (
     ('SH', 'Small house'),
-    ('H',  'House'),
+    ('H', 'House'),
     ('SB', 'Small building'),
-    ('B',  'Building')
+    ('B', 'Building')
 )
 
 GENDERS = (
