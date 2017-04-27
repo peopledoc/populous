@@ -33,7 +33,12 @@ class Postgres(Backend):
         # authorize uuids objects in queries
         psycopg2.extras.register_uuid()
         # authorize dicts objects for hstore in queries
-        psycopg2.extras.register_hstore(self.conn)
+        try:
+            psycopg2.extras.register_hstore(self.conn)
+        except psycopg2.ProgrammingError:
+            # this probably means that the hstore extension is not
+            # installed in the db, no need to register it then
+            pass
 
     @property
     def json_adapter(self):
