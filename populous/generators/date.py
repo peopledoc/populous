@@ -1,7 +1,7 @@
 import random
 from datetime import date
 from datetime import datetime
-from time import mktime
+from time import mktime, gmtime
 
 from dateutil.parser import parse as dateutil_parse
 from dateutil.tz import tzlocal
@@ -29,6 +29,8 @@ def parse_datetime(candidate):
 
 class DateTime(Generator):
 
+    epoch_year = gmtime(0).tm_year
+
     def get_arguments(self, past=True, future=False, after=None, before=None,
                       **kwargs):
         super(DateTime, self).get_arguments(**kwargs)
@@ -43,7 +45,7 @@ class DateTime(Generator):
             start = to_timestamp(datetime.now())
         else:
             # try not to go too far in the past
-            start = to_timestamp(datetime(1900, 1, 1))
+            start = to_timestamp(datetime(self.epoch_year, 1, 1))
 
         if self.future:
             # try not to go too far in the future
