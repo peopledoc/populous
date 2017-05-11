@@ -1,3 +1,4 @@
+import os
 import random
 import contextlib
 import uuid
@@ -24,8 +25,9 @@ class Postgres(Backend):
 
         self._current_cursor = None
 
+        dbname = kwargs.pop('db', None) or os.environ.get('PGDATABASE')
         try:
-            self.conn = psycopg2.connect(**kwargs)
+            self.conn = psycopg2.connect(dbname=dbname, **kwargs)
         except psycopg2.DatabaseError as e:
             raise BackendError("Error connecting to Postgresql DB: {}"
                                .format(e))

@@ -60,15 +60,15 @@ def _generic_run(modulename, classname, files, **kwargs):
 
 
 @run.command()
-@click.option('--host', default='localhost', help="Database host address")
-@click.option('--port', default=5432, type=int, help="Database host port")
+@click.option('--host', help="Database host address")
+@click.option('--port', type=int, help="Database host port")
 @click.option('--db', help="Database name")
 @click.option('--user', help="Postgresql user name used to authenticate")
 @click.option('--password', help="Postgresql password used to authenticate")
 @click.argument('files', nargs=-1, required=True)
 def postgresql(host, port, db, user, password, files):
     return _generic_run('postgres', 'Postgres', files, host=host, port=port,
-                        database=db, user=user, password=password)
+                        db=db, user=user, password=password)
 
 
 @cli.command()
