@@ -16,6 +16,8 @@ def parse_vars(value):
         return value
 
     if value[0] == '$':
+        value = value.strip()
+
         # find out if it is a '$var` or `$(expr)`
         if len(value) > 1 and value[1] == '(':
             if value[-1] != ')':

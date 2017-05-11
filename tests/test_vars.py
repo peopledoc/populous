@@ -39,12 +39,15 @@ def test_parse_vars(mocker):
     assert parse_vars('') == ''
     assert parse_vars('foo') == 'foo'
     assert parse_vars('foo $bar') == 'foo $bar'
+    assert parse_vars(' ') == ' '
+    assert parse_vars(' foo ') == ' foo '
     assert parse_vars(u'foo') == u'foo'
 
     assert parse_vars('$foo') == Value('foo')
     assert parse_vars('$foo.bar') == Value('foo.bar')
     assert parse_vars('$foo.bar.lol') == Value('foo.bar.lol')
     assert parse_vars('$_a2.x3_') == Value('_a2.x3_')
+    assert parse_vars('$foo  ') == Value('foo')
 
     assert parse_vars('$(foo)') == JinjaValue('foo')
     assert parse_vars('$(foo.bar)') == JinjaValue('foo.bar')
@@ -53,6 +56,7 @@ def test_parse_vars(mocker):
         parse_vars('$(foo|random|d("foo"))') ==
         JinjaValue('foo|random|d("foo")')
     )
+    assert parse_vars('$(foo)  ') == JinjaValue('foo')
 
     assert parse_vars(r'\$foo') == '$foo'
     assert parse_vars(r'\$foo.bar') == '$foo.bar'
@@ -73,11 +77,12 @@ def test_parse_vars(mocker):
     with pytest.raises(ValidationError):
         parse_vars('$foo)')
     with pytest.raises(ValidationError):
-        parse_vars('$(foo) ')
+        parse_vars('$(foo).')
 
     assert parse_vars('{{ foo }}') == Template('{{ foo }}')
     assert parse_vars('{{ foo }} bar') == Template('{{ foo }} bar')
     assert parse_vars('bar {{ foo }}') == Template('bar {{ foo }}')
+    assert parse_vars('  {{ foo }}  ') == Template('  {{ foo }}  ')
     assert (
         parse_vars('{% for x in foo %}{% endfor %}') ==
         Template('{% for x in foo %}{% endfor %}')
