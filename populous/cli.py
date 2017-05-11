@@ -66,7 +66,7 @@ def _generic_run(modulename, classname, files, **kwargs):
 @click.option('--user', help="Postgresql user name used to authenticate")
 @click.option('--password', help="Postgresql password used to authenticate")
 @click.argument('files', nargs=-1, required=True)
-def postgresql(host, port, db, user, password, files):
+def postgres(host, port, db, user, password, files):
     return _generic_run('postgres', 'Postgres', files, host=host, port=port,
                         db=db, user=user, password=password)
 
