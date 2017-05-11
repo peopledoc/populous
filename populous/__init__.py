@@ -2,8 +2,9 @@
 Populate your database with god-like powers
 """
 
-__author__ = "People Doc"
-__copyright__ = "Copyright 2015, People Doc"
+__author__ = "PeopleDoc"
+__author_email__ = "yannick.peroux@people-doc.com"
+__copyright__ = "Copyright 2017, PeopleDoc"
 __license__ = "MIT"
 __url__ = 'http://github.com/novafloss/populous'
-__version__ = "0.1a"
+__version__ = "0.1.0.dev0"

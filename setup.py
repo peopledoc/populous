@@ -4,6 +4,12 @@ from setuptools import setup, find_packages
 
 import populous
 
+
+def readme():
+    with open('README.rst') as f:
+        return f.read()
+
+
 requirements = [
     "click",
     "click-log",
@@ -24,9 +30,10 @@ setup(
     url=populous.__url__,
     description=populous.__doc__,
     author=populous.__author__,
+    author_email=populous.__author_email__,
     license=populous.__license__,
-    long_description="TODO",
-    packages=find_packages(),
+    long_description=readme(),
+    packages=find_packages(exclude=['demo']),
     install_requires=requirements,
     extras_require={
         'tests': ['tox', 'pytest', 'pytest-mock', 'flake8'],
@@ -45,4 +52,5 @@ setup(
         "Topic :: Utilities",
     ],
     keywords='populous populate database',
+    zip_safe=False,
 )
