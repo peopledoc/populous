@@ -3,6 +3,7 @@
 *.egg*
 .coverage
 build
+dist
 .DS_Store
 *.swp
 *~
