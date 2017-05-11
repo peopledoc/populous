@@ -37,7 +37,7 @@ setup(
     name="populous",
     version=populous.__version__,
     url=populous.__url__,
-    description=populous.__doc__,
+    description="Populate your database with god-like powers",
     author=populous.__author__,
     author_email=populous.__author_email__,
     license=populous.__license__,
