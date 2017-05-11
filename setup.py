@@ -6,6 +6,7 @@ import populous
 
 requirements = [
     "click",
+    "click-log",
     "cached-property",
     "Faker",
     "dateutils",

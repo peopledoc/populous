@@ -1,9 +1,13 @@
 import importlib
+import logging
 
 import click
+import click_log
 
 from .loader import load_blueprint
 from .exceptions import ValidationError, YAMLError, BackendError
+
+logger = logging.getLogger('populous')
 
 
 def get_blueprint(files, **kwargs):
@@ -18,6 +22,7 @@ def get_blueprint(files, **kwargs):
 
 @click.group()
 @click.version_option()
+@click_log.init('populous')
 def cli():
     pass
 
