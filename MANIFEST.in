@@ -1,0 +1,9 @@
+include README.rst
+include CHANGELOG
+include LICENSE
+recursive-include populous *
+recursive-include demo *
+global-exclude *.pyc
+global-exclude __pycache__
+global-exclude tags
+global-exclude .git
