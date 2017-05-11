@@ -1,4 +1,5 @@
 import copy
+import logging
 import random
 from collections import OrderedDict
 from collections import namedtuple
@@ -12,6 +13,8 @@ from populous.factory import ItemFactory
 from populous.vars import parse_vars
 from populous.vars import Expression
 from populous.vars import ValueExpression
+
+logger = logging.getLogger('populous')
 
 ITEM_KEYS = ('name', 'parent', 'table', 'count', 'fields', 'store_in')
 COUNT_KEYS = ('number', 'by', 'min', 'max')
@@ -218,6 +221,8 @@ class Item(object):
                 field.seen.add(values[index], check=False)
 
     def batch_written(self, buffer, batch, ids):
+        logger.info("{:>5} {} written".format(len(batch), self.name))
+
         objs = tuple(e._replace(id=id) for (e, id) in izip(batch, ids))
         self.store_values(objs)
         self.generate_dependencies(buffer, objs)

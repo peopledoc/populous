@@ -47,8 +47,13 @@ def _generic_run(modulename, classname, files, **kwargs):
         try:
             with backend.transaction():
                 blueprint.generate()
+
+                logger.info("Closing DB transaction...")
+
         finally:
             backend.close()
+
+        logger.info("Have fun!")
 
     except BackendError as e:
         raise click.ClickException(e.message)

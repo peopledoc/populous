@@ -1,9 +1,12 @@
+import logging
 from collections import OrderedDict, defaultdict
 
 from populous.bloom import BloomFilter
 from populous.buffer import Buffer
 from populous.exceptions import ValidationError
 from populous.item import Item, COUNT_KEYS, ITEM_KEYS
+
+logger = logging.getLogger('populous')
 
 
 class Blueprint(object):
@@ -117,9 +120,13 @@ class Blueprint(object):
             item.preprocess()
 
     def generate(self):
+        logger.info("Getting existing unique values...")
+
         self.preprocess()
 
         buffer = Buffer(self)
+
+        logger.info("Starting generation...")
 
         for item in self.items.values():
             if item.count.by:
@@ -131,3 +138,5 @@ class Blueprint(object):
 
         # write everything left in the buffer
         buffer.flush()
+
+        logger.info("Generation done.")
