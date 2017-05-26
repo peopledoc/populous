@@ -19,11 +19,19 @@ requirements = [
     "future",
     "Jinja2",
     "PyYAML",
-    "peloton_bloomfilters",
 ]
 
 if sys.version_info < (3, 2):
     requirements.append('functools32')
+
+if sys.version_info < (3,):
+    requirements.append('peloton_bloomfilters')
+else:
+    requirements += [
+        'cython',
+        'pybloomfiltermmap3',
+    ]
+
 
 setup(
     name="populous",
