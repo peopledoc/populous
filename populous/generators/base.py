@@ -28,6 +28,8 @@ class BaseGenerator(object):
     def next(self):
         return next(self.iterator)
 
+    __next__ = next
+
     @cached_property
     def iterator(self):
         return iter(self.get_generator())

@@ -14,10 +14,10 @@ def get_blueprint(files, **kwargs):
     try:
         return load_blueprint(*files, **kwargs)
     except (YAMLError, ValidationError) as e:
-        raise click.ClickException(e.message)
+        raise click.ClickException(e)
     except Exception as e:
         raise click.ClickException("Unexpected error during the blueprint "
-                                   "loading: {}".format(e.message))
+                                   "loading: {}".format(e))
 
 
 @click.group()
@@ -35,8 +35,10 @@ def run():
 def _generic_run(modulename, classname, files, **kwargs):
     try:
         try:
-            module = importlib.import_module('.' + modulename,
-                                             package='populous.backends')
+            module = importlib.import_module(
+                'populous.backends.' + modulename,
+                package='populous.backends'
+            )
             backend_cls = getattr(module, classname)
         except (ImportError, AttributeError):
             raise click.ClickException("Backend not found.")
@@ -56,7 +58,7 @@ def _generic_run(modulename, classname, files, **kwargs):
         logger.info("Have fun!")
 
     except BackendError as e:
-        raise click.ClickException(e.message)
+        raise click.ClickException(e)
 
 
 @run.command()

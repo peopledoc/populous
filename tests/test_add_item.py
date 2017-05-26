@@ -32,7 +32,7 @@ def test_name_and_table():
     item = blueprint.items['foo']
     assert item.name == 'foo'
     assert item.table == 'bar'
-    assert item.fields.keys() == ['id']
+    assert list(item.fields.keys()) == ['id']
 
 
 def test_required():
@@ -144,10 +144,10 @@ def test_store_in():
     assert foo.store_in_global['test'] == 'foo'
 
     assert len(foo.store_in_item) == 1
-    name_expr = foo.store_in_item.keys()[0]
+    name_expr = list(foo.store_in_item.keys())[0]
     assert name_expr.var == 'this'
     assert name_expr.attrs == 'toto.foos'
-    value_expr = foo.store_in_item.values()[0]
+    value_expr = list(foo.store_in_item.values())[0]
     assert value_expr.var == 'this'
     assert value_expr.attrs == 'id'
 

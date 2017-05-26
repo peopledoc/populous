@@ -8,6 +8,7 @@ try:
 except ImportError:
     from functools32 import lru_cache
 
+from populous.compat import range
 from populous.exceptions import BackendError
 from .base import Backend
 
@@ -70,8 +71,8 @@ class Postgres(Backend):
                 item.table,
                 ", ".join(item.db_fields),
                 ", ".join("({})".format(
-                    ", ".join("%s" for _ in xrange(len(item.db_fields)))
-                ) for _ in xrange(len(objs))),
+                    ", ".join("%s" for _ in range(len(item.db_fields)))
+                ) for _ in range(len(objs))),
                 self.get_pk_column(item.table)
             )
 
@@ -79,7 +80,7 @@ class Postgres(Backend):
                 cursor.execute(stmt, tuple(v for vs in objs for v in vs))
             except psycopg2.DatabaseError as e:
                 raise BackendError("Error during the generation of "
-                                   "'{}': {}".format(item.name, e.message))
+                                   "'{}': {}".format(item.name, e))
 
             return tuple(e[0] for e in cursor.fetchall())
 

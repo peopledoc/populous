@@ -1,10 +1,13 @@
 import logging
+
 from collections import OrderedDict, defaultdict
 
 from populous.bloom import BloomFilter
 from populous.buffer import Buffer
+from populous.compat import basestring
 from populous.exceptions import ValidationError
 from populous.item import Item, COUNT_KEYS, ITEM_KEYS
+
 
 logger = logging.getLogger('populous')
 

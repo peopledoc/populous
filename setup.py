@@ -14,11 +14,12 @@ requirements = [
     "click",
     "click-log",
     "cached-property",
-    "Faker",
     "dateutils",
+    "Faker",
+    "future",
+    "Jinja2",
     "PyYAML",
     "peloton_bloomfilters",
-    "Jinja2"
 ]
 
 if sys.version_info < (3, 2):

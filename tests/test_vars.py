@@ -1,8 +1,9 @@
 import pytest
 
-from populous.vars import parse_vars
+from populous.compat import range
 from populous.exceptions import GenerationError
 from populous.exceptions import ValidationError
+from populous.vars import parse_vars
 
 
 def test_parse_vars(mocker):
@@ -222,7 +223,7 @@ def test_jinja_random():
     from populous.vars import TemplateExpression
 
     j = JinjaValueExpression('[21, 42]|random')
-    assert set(j.evaluate() for _ in xrange(100)) == set((21, 42))
+    assert set(j.evaluate() for _ in range(100)) == set((21, 42))
 
     j = JinjaValueExpression('[]|random')
     with pytest.raises(GenerationError) as e:
@@ -232,4 +233,4 @@ def test_jinja_random():
     assert msg in str(e.value)
 
     t = TemplateExpression('{{ [21, 42]|random }}')
-    assert set(t.evaluate() for _ in xrange(100)) == set(("21", "42"))
+    assert set(t.evaluate() for _ in range(100)) == set(("21", "42"))
