@@ -3,11 +3,12 @@ import logging
 import random
 from collections import OrderedDict
 from collections import namedtuple
-from itertools import izip
 
 from cached_property import cached_property
 
 from populous import generators
+from populous.compat import zip
+from populous.compat import range
 from populous.exceptions import ValidationError
 from populous.factory import ItemFactory
 from populous.vars import parse_vars
@@ -223,7 +224,7 @@ class Item(object):
     def batch_written(self, buffer, batch, ids):
         logger.info("{:>5} {} written".format(len(batch), self.name))
 
-        objs = tuple(e._replace(id=id) for (e, id) in izip(batch, ids))
+        objs = tuple(e._replace(id=id) for (e, id) in zip(batch, ids))
         self.store_values(objs)
         self.generate_dependencies(buffer, objs)
 
@@ -249,7 +250,7 @@ class Item(object):
     def generate(self, buffer, count, parent=None):
         factory = ItemFactory(self, parent=parent)
 
-        for i in xrange(count):
+        for i in range(count):
             self.blueprint.vars['this'] = factory
             obj = factory.generate()
             del self.blueprint.vars['this']

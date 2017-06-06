@@ -3,6 +3,8 @@ from datetime import date
 from populous.backends.base import Backend
 from populous.blueprint import Blueprint
 from populous.buffer import Buffer
+from populous.compat import PY2
+from populous.compat import range
 from populous.factory import ItemFactory
 from populous.item import Item
 
@@ -147,8 +149,11 @@ def test_blueprint_generate(mocker):
 
     assert foo.generate.call_args == mocker.call(buffer, 10)
     assert bar.generate.called is False
-    assert lol.generate.call_args == mocker.call(buffer, 17)
 
+    if PY2:
+        assert lol.generate.call_args == mocker.call(buffer, 17)
+    else:
+        assert lol.generate.call_args == mocker.call(buffer, 15)
     assert buffer.flush.called is True
 
 
@@ -207,7 +212,7 @@ def test_write_buffer(mocker):
     buffer = Buffer(blueprint, maxlen=10)
     item.generate(buffer, 10)
 
-    objs = tuple(item.namedtuple(id=x, a=42) for x in xrange(10))
+    objs = tuple(item.namedtuple(id=x, a=42) for x in range(10))
     assert len(buffer.buffers['foo']) == 0
     assert item.store_values.call_args == mocker.call(objs)
     assert item.generate_dependencies.call_args == mocker.call(buffer, objs)
@@ -330,7 +335,7 @@ def test_generate_dependencies():
     assert 10 <= len(blueprint.vars['lols']) <= 20
 
     def ids():
-        for x in xrange(10):
+        for x in range(10):
             yield x
             yield x
 

@@ -1,4 +1,4 @@
-from peloton_bloomfilters import BloomFilter as _BloomFilter
+from .compat import bloomfilter
 
 
 class BloomFilter(object):
@@ -32,4 +32,4 @@ class BloomFilter(object):
         if self._filters:
             self._capacity *= 4
             self._error_rate *= 0.9
-        return _BloomFilter(self._capacity, self._error_rate)
+        return bloomfilter.BloomFilter(self._capacity, self._error_rate)

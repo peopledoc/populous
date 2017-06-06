@@ -1,7 +1,14 @@
 import array
 import os
 import random
-import string
+
+from string import ascii_lowercase
+from string import ascii_uppercase
+from string import digits
+from string import printable
+from string import punctuation
+
+from populous.compat import ascii_letters
 
 from .base import Generator
 
@@ -18,13 +25,13 @@ class Text(Generator):
 
     def get_chars(self, description):
         categories = {
-            '<a-Z>': string.ascii_letters,
-            '<a-z>': string.ascii_lowercase,
-            '<A-Z>': string.ascii_uppercase,
-            '<0-9>': string.digits,
+            '<a-Z>': ascii_letters,
+            '<a-z>': ascii_lowercase,
+            '<A-Z>': ascii_uppercase,
+            '<0-9>': digits,
             '<spaces>': ' \t',
-            '<printable>': string.printable,
-            '<punctuation>': string.punctuation,
+            '<printable>': printable,
+            '<punctuation>': punctuation,
             '<newline>': '\n',
         }
         for category, chars in categories.items():

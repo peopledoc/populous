@@ -32,7 +32,7 @@ def test_load_blueprint_validation_error(mocker):
 
     e = exc.value
     assert e.filename == 'foo.yml'
-    assert e.message == "File 'foo.yml': foo"
+    assert str(e) == "File 'foo.yml': foo"
 
 
 def test_load_blueprint_yaml_error(mocker):
@@ -43,7 +43,7 @@ def test_load_blueprint_yaml_error(mocker):
         loader.load_blueprint('foo.yml')
 
     e = exc.value
-    assert e.message == "Error parsing 'foo.yml': foo"
+    assert str(e) == "Error parsing 'foo.yml': foo"
 
 
 def test_get_yaml(mocker):
@@ -62,8 +62,8 @@ def test_get_yaml_error(mocker):
         loader._get_yaml('foo.yml')
 
     e = exc.value
-    assert e.message.startswith("Error parsing 'foo.yml': ")
-    assert e.message.endswith('line 1, column 1')
+    assert str(e).startswith("Error parsing 'foo.yml': ")
+    assert str(e).endswith('line 1, column 1')
 
 
 def test_load_content(mocker):

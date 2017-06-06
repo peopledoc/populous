@@ -3,6 +3,7 @@ from operator import attrgetter
 
 import jinja2
 
+from populous.compat import basestring
 from populous.exceptions import GenerationError
 from populous.exceptions import ValidationError
 from populous.jinja import jinja_env
@@ -81,7 +82,7 @@ class ValueExpression(Expression):
                 # inspecting the calling frame
                 raise GenerationError(
                     "Error generating value '${}': {}"
-                    .format(self.value, e.message)
+                    .format(self.value, e)
                 )
         else:
             return var

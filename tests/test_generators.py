@@ -6,6 +6,8 @@ from contextlib import contextmanager
 import pytest
 
 from populous.backends.base import Backend
+from populous.compat import ascii_letters
+from populous.compat import basestring
 from populous.exceptions import GenerationError
 from populous.exceptions import ValidationError
 from populous import generators
@@ -59,7 +61,7 @@ def test_base_generator_refuse_extra_argument(item):
            "generator 'BaseGenerator': foo")
     with pytest.raises(ValidationError) as e:
         generators.BaseGenerator(item, 'foo', foo='bar')
-    assert msg in e.value
+    assert msg in str(e)
 
 
 def test_nullable(item):
@@ -79,13 +81,13 @@ def test_nullable(item):
     assert None in sample
     assert 1 in sample
     assert 200 < sample.count(None) < 800
-    assert max(sample) == 1000 - sample.count(None) - 1
+    assert max(filter(None, sample)) == 1000 - sample.count(None) - 1
 
     generator = DummyGenerator(item, 'foo', nullable=0.1)
     sample = take(generator, 1000)
     assert None in sample
     assert 0 < sample.count(None) < 200
-    assert max(sample) == 1000 - sample.count(None) - 1
+    assert max(filter(None, sample)) == 1000 - sample.count(None) - 1
 
 
 def test_uniqueness(item):
@@ -311,7 +313,7 @@ def test_text(item):
     sample = take(generator, 10)
     assert len(sample) == 10
     assert all(isinstance(e, str) for e in sample)
-    chars = string.letters + string.digits + ' '
+    chars = ascii_letters + string.digits + ' '
     assert all(all(c in chars for c in e) for e in sample)
 
     generator = generators.Text(item, 'foo', min_length=10, max_length=100)
@@ -464,7 +466,7 @@ def test_name(item):
     generator = generators.Name(item, 'foo')
     sample = take(generator, 10)
     assert len(sample) == 10
-    assert all(isinstance(e, unicode) for e in sample)
+    assert all(isinstance(e, basestring) for e in sample)
     assert all(' ' in e for e in sample)
 
     generator = generators.Name(item, 'foo', max_length=30)
@@ -487,7 +489,7 @@ def test_first_name(item):
     generator = generators.FirstName(item, 'foo')
     sample = take(generator, 10)
     assert len(sample) == 10
-    assert all(isinstance(e, unicode) for e in sample)
+    assert all(isinstance(e, basestring) for e in sample)
 
     generator = generators.FirstName(item, 'foo', max_length=30)
     sample = take(generator, 10)
@@ -507,7 +509,7 @@ def test_last_name(item):
     generator = generators.LastName(item, 'foo')
     sample = take(generator, 10)
     assert len(sample) == 10
-    assert all(isinstance(e, unicode) for e in sample)
+    assert all(isinstance(e, basestring) for e in sample)
 
     generator = generators.LastName(item, 'foo', max_length=30)
     sample = take(generator, 10)
