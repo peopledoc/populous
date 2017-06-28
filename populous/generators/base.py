@@ -69,8 +69,10 @@ class NullableMixin(object):
 
         if not nullable:
             self.nullable = 0
+        elif nullable is True:
+            self.nullable = 0.5
         else:
-            self.nullable = 0.5 if nullable is True else nullable
+            self.nullable = self.parse_vars(nullable)
 
     def get_generator(self):
         if self.nullable:
@@ -80,7 +82,7 @@ class NullableMixin(object):
     def generate_with_null(self):
         generator = super(NullableMixin, self).get_generator()
         while True:
-            if random.random() <= self.nullable:
+            if random.random() <= self.evaluate(self.nullable):
                 yield None
             else:
                 yield next(generator)
