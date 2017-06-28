@@ -5,6 +5,7 @@ Changelog
 ------------------
 
 - Add python3 support
+- Accept variables for 'nullable' in generators
 
 
 0.1.1 (2017-05-11)

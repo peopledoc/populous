@@ -89,6 +89,14 @@ def test_nullable(item):
     assert 0 < sample.count(None) < 200
     assert max(filter(None, sample)) == 1000 - sample.count(None) - 1
 
+    generator = DummyGenerator(item, 'foo', nullable='$foo')
+    item.blueprint.vars['foo'] = 1
+    sample = take(generator, 10)
+    assert sample == [None] * 10
+    item.blueprint.vars['foo'] = 0
+    sample = take(generator, 10)
+    assert None not in sample
+
 
 def test_uniqueness(item):
 
