@@ -9,3 +9,4 @@ dist
 *~
 .tox
 db.sqlite3
+.cache
