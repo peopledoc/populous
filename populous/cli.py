@@ -8,6 +8,7 @@ from .loader import load_blueprint
 from .exceptions import ValidationError, YAMLError, BackendError
 
 logger = logging.getLogger('populous')
+click_log.basic_config(logger)
 
 
 def get_blueprint(files, **kwargs):
@@ -22,7 +23,7 @@ def get_blueprint(files, **kwargs):
 
 @click.group()
 @click.version_option()
-@click_log.init('populous')
+@click_log.simple_verbosity_option(logger)
 def cli():
     pass
 
