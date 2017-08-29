@@ -12,7 +12,7 @@ def readme():
 
 requirements = [
     "click",
-    "click-log>0.2",
+    "click-log>=0.2.0",
     "cached-property",
     "dateutils",
     "Faker",
