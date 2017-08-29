@@ -15,7 +15,7 @@ def get_blueprint(files, **kwargs):
     try:
         return load_blueprint(*files, **kwargs)
     except (YAMLError, ValidationError) as e:
-        raise click.ClickException(e)
+        raise click.ClickException(str(e))
     except Exception as e:
         raise click.ClickException("Unexpected error during the blueprint "
                                    "loading: {}".format(e))
@@ -59,7 +59,7 @@ def _generic_run(modulename, classname, files, **kwargs):
         logger.info("Have fun!")
 
     except BackendError as e:
-        raise click.ClickException(e)
+        raise click.ClickException(str(e))
 
 
 @run.command()
