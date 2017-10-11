@@ -351,6 +351,42 @@ def test_text(item):
     sample = take(generator, 10)
     assert len(sample) == 10
     assert all((c in 'abc' for c in e) for e in sample)
+    assert all((c in string.printable for c in e) for e in sample)
+
+    generator = generators.Text(item, 'foo', chars='<a-z><0-9>',
+                                min_length=None, max_length=0)
+    sample = take(generator, 10)
+    assert len(sample) == 10
+    assert all(len(e) == 0 for e in sample)
+
+    generator = generators.Text(item, 'foo', chars='abc', min_length=1,
+                                max_length=100)
+    sample = take(generator, 10)
+    assert len(sample) == 10
+    assert all((c in 'abc' for c in e) for e in sample)
+
+    # Expressions
+    generator = generators.Text(
+        item, 'foo',
+        chars='abc',
+        min_length='$([5, 10]|random)',
+        max_length=10
+    )
+    sample = take(generator, 10)
+
+    assert len(sample) == 10
+    assert all((5 <= len(e) <= 10) for e in sample)
+
+    generator = generators.Text(
+        item, 'foo',
+        chars='abc',
+        min_length='$([1, 2]|random)',
+        max_length='$([3, 4]|random)'
+    )
+    sample = take(generator, 10)
+
+    assert len(sample) == 10
+    assert all((1 <= len(e) <= 4) for e in sample)
 
 
 def test_datetime(blueprint, item):
