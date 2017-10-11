@@ -351,6 +351,19 @@ def test_text(item):
     sample = take(generator, 10)
     assert len(sample) == 10
     assert all((c in 'abc' for c in e) for e in sample)
+    assert all((c in string.printable for c in e) for e in sample)
+
+    generator = generators.Text(item, 'foo', chars='<a-z><0-9>',
+                                min_length=None, max_length=0)
+    sample = take(generator, 10)
+    assert len(sample) == 10
+    assert all(len(e) == 0 for e in sample)
+
+    generator = generators.Text(item, 'foo', chars='abc', min_length=1,
+                                max_length=100)
+    sample = take(generator, 10)
+    assert len(sample) == 10
+    assert all((c in 'abc' for c in e) for e in sample)
 
     # Expressions
     generator = generators.Text(
