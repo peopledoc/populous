@@ -9,6 +9,7 @@ from string import printable
 from string import punctuation
 
 from populous.compat import ascii_letters
+from populous.vars import parse_vars
 
 from .base import Generator
 
@@ -19,8 +20,14 @@ class Text(Generator):
                       **kwargs):
         super(Text, self).get_arguments(**kwargs)
 
-        self.min_length = min_length or 0
-        self.max_length = max_length or 10000
+        if min_length is None:
+            min_length = 0
+
+        if max_length is None:
+            max_length = 10000
+
+        self.min_length = parse_vars(min_length)
+        self.max_length = parse_vars(max_length)
         self.chars = self.get_chars(chars)
 
     def get_chars(self, description):
@@ -45,7 +52,10 @@ class Text(Generator):
 
         while True:
             # get a random length for the string
-            length = random.randint(self.min_length, self.max_length)
+            length = random.randint(
+                self.evaluate(self.min_length),
+                self.evaluate(self.max_length)
+            )
             # get a random array of short integers of the same length than
             # the final string
             rand_shorts = array.array('H', os.urandom(length * 2))

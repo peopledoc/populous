@@ -352,6 +352,29 @@ def test_text(item):
     assert len(sample) == 10
     assert all((c in 'abc' for c in e) for e in sample)
 
+    # Expressions
+    generator = generators.Text(
+        item, 'foo',
+        chars='abc',
+        min_length='$([5, 10]|random)',
+        max_length=10
+    )
+    sample = take(generator, 10)
+
+    assert len(sample) == 10
+    assert all((5 <= len(e) <= 10) for e in sample)
+
+    generator = generators.Text(
+        item, 'foo',
+        chars='abc',
+        min_length='$([1, 2]|random)',
+        max_length='$([3, 4]|random)'
+    )
+    sample = take(generator, 10)
+
+    assert len(sample) == 10
+    assert all((1 <= len(e) <= 4) for e in sample)
+
 
 def test_datetime(blueprint, item):
     from datetime import datetime
