@@ -4,10 +4,20 @@ matrix:
   include:
     - python: 2.7
       env: TOX_ENV=py27
-    - env: TOX_ENV=py27-django18
-    - env: TOX_ENV=py27-django19
-    - env: TOX_ENV=py27-django110
-    - env: TOX_ENV=py27-djangostable
+    - python: 2.7
+      env: TOX_ENV=py27-django18
+    - python: 2.7
+      env: TOX_ENV=py27-django110
+    - python: 2.7
+      env: TOX_ENV=py27-djangostable
+    - python: 3.6
+      env: TOX_ENV=py36
+    - python: 3.6
+      env: TOX_ENV=py36-django18
+    - python: 3.6
+      env: TOX_ENV=py36-django110
+    - python: 3.6
+      env: TOX_ENV=py36-djangostable
     - env: TOX_ENV=flake8
 
 install:
