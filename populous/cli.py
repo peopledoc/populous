@@ -3,6 +3,7 @@ import logging
 
 import click
 import click_log
+import six
 
 from .loader import load_blueprint
 from .exceptions import ValidationError, YAMLError, BackendError
@@ -15,7 +16,7 @@ def get_blueprint(files, **kwargs):
     try:
         return load_blueprint(*files, **kwargs)
     except (YAMLError, ValidationError) as e:
-        raise click.ClickException(str(e))
+        raise click.ClickException(six.text_type(e))
     except Exception as e:
         raise click.ClickException("Unexpected error during the blueprint "
                                    "loading: {}".format(e))
@@ -59,7 +60,7 @@ def _generic_run(modulename, classname, files, **kwargs):
         logger.info("Have fun!")
 
     except BackendError as e:
-        raise click.ClickException(str(e))
+        raise click.ClickException(six.text_type(e))
 
 
 @run.command()
