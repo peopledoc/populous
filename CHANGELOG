@@ -5,6 +5,7 @@ Changelog
 ------------------
 
 - Fix unicode error in exceptions with Python 2
+- Add support for expressions in the Text generator
 
 
 0.2.2 (2017-09-12)
