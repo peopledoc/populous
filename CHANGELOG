@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.3.0 (unreleased)
+0.3.0 (2017-12-06)
 ------------------
 
 - Fix unicode error in exceptions with Python 2
