@@ -1,5 +1,11 @@
+from .compat import PY2
+
+
 class PopulousError(Exception):
-    pass
+
+    if PY2:
+        def __unicode__(self):
+            return str(self).decode('utf-8')
 
 
 class YAMLError(PopulousError):
