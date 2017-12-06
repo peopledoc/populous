@@ -52,7 +52,7 @@ def test_call_command(capsys):
     last_name:
       generator: Text
       min_length: 0
-      max_length: 30
+      max_length: {lastname_length}
     email:
       generator: Email
       min_length: 0
@@ -149,5 +149,6 @@ def test_call_command(capsys):
       generator: Choices
       choices: [1, 2]
 """.format(
-        username_length=30 if django.VERSION < (1, 10) else 150
+        username_length=30 if django.VERSION < (1, 10) else 150,
+        lastname_length=30 if django.VERSION < (2,) else 150,
     )
