@@ -170,7 +170,6 @@ def test_item_generate():
     buffer = Buffer(blueprint)
     item.generate(buffer, 10)
 
-    assert list(buffer.buffers.keys()) == ['foo']
     assert len(buffer.buffers['foo']) == 10
 
     for obj in buffer.buffers['foo']:
@@ -226,11 +225,6 @@ def test_write_empty_buffer(mocker):
     mocker.patch.object(blueprint.backend, 'write')
 
     buffer = Buffer(blueprint)
-    # the buffer for the item doesn't exist
-    buffer.write(item)
-    assert not blueprint.backend.write.called
-
-    buffer.get_buffer(item)
     # the buffer for the item is empty
     buffer.write(item)
     assert not blueprint.backend.write.called
@@ -278,8 +272,8 @@ def test_flush_buffer_with_dependencies(mocker):
     buffer = Buffer(blueprint)
     blueprint.items['foo'].generate(buffer, 5)
     assert len(buffer.buffers['foo']) == 5
-    assert 'bar' not in buffer.buffers
-    assert 'lol' not in buffer.buffers
+    assert len(buffer.buffers['bar']) == 0
+    assert len(buffer.buffers['lol']) == 0
 
     buffer.flush()
     assert len(buffer.buffers['foo']) == 0
@@ -323,10 +317,11 @@ def test_generate_dependencies():
     buffer = Buffer(blueprint)
     foo = blueprint.items['foo']
     foo.generate(buffer, 10)
-    assert list(buffer.buffers.keys()) == ['foo']
+    assert len(buffer.buffers['foo']) == 10
+    assert len(buffer.buffers['bar']) == 0
+    assert len(buffer.buffers['lol']) == 0
 
     buffer.write(foo)
-    assert list(buffer.buffers.keys()) == ['foo', 'bar', 'lol']
     assert len(buffer.buffers['foo']) == 0
     assert len(buffer.buffers['bar']) == 0
     assert len(buffer.buffers['lol']) == 0
@@ -363,17 +358,18 @@ def test_generate_dependencies_ancestors():
     foo3 = blueprint.items['foo3']
     foo3.generate(buffer, 2)
     foo2.generate(buffer, 2)
-    assert list(buffer.buffers.keys()) == ['foo3', 'foo2']
+    assert len(buffer.buffers['foo2']) == 2
+    assert len(buffer.buffers['foo3']) == 2
+    assert len(buffer.buffers['bar']) == 0
+    assert len(blueprint.vars['bars']) == 0
 
     buffer.write(foo3)
-    assert list(buffer.buffers.keys()) == ['foo3', 'foo2', 'bar']
     assert len(buffer.buffers['foo2']) == 2
     assert len(buffer.buffers['foo3']) == 0
     assert len(buffer.buffers['bar']) == 0
     assert len(blueprint.vars['bars']) == 4
 
     buffer.write(foo2)
-    assert list(buffer.buffers.keys()) == ['foo3', 'foo2', 'bar']
     assert len(buffer.buffers['foo2']) == 0
     assert len(buffer.buffers['foo3']) == 0
     assert len(buffer.buffers['bar']) == 0
@@ -409,10 +405,13 @@ def test_generate_dependencies_tree():
     buffer = Buffer(blueprint)
     foo1 = blueprint.items['foo1']
     foo1.generate(buffer, foo1.count())
-    assert list(buffer.buffers.keys()) == ['foo1']
+
+    assert len(blueprint.vars['foo1s']) == 0
+    assert len(blueprint.vars['foo2s']) == 0
+    assert len(blueprint.vars['foo3s']) == 0
+    assert len(blueprint.vars['bars']) == 0
 
     buffer.write(foo1)
-    assert list(buffer.buffers.keys()) == ['foo1', 'foo2', 'foo3', 'bar']
 
     assert len(blueprint.vars['foo1s']) == 2
     assert len(blueprint.vars['foo2s']) == 4
