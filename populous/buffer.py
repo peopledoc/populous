@@ -7,11 +7,14 @@ class Buffer(object):
         self.blueprint = blueprint
         self.backend = blueprint.backend
         self.maxlen = maxlen
-        self.buffers = OrderedDict()
+        self.buffers = OrderedDict(
+            (item.name, deque(maxlen=self.maxlen))
+            for item in self.blueprint.items.values()
+        )
 
     def add(self, obj):
         item = self.blueprint.items[type(obj).__name__]
-        buffer = self.get_buffer(item)
+        buffer = self.buffers[item.name]
         buffer.append(obj)
 
         if len(buffer) == self.maxlen:
@@ -23,7 +26,7 @@ class Buffer(object):
                 self.write(self.blueprint.items[item_name], buffer)
 
     def write(self, item, buffer=None):
-        buffer = buffer or self.get_buffer(item)
+        buffer = buffer or self.buffers[item.name]
         if not buffer:
             return
         ids = self.backend.write(
@@ -31,11 +34,3 @@ class Buffer(object):
         )
         item.batch_written(self, buffer, ids)
         buffer.clear()
-
-    def get_buffer(self, item):
-        try:
-            return self.buffers[item.name]
-        except KeyError:
-            buffer = deque(maxlen=self.maxlen)
-            self.buffers[item.name] = buffer
-            return buffer
