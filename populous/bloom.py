@@ -1,4 +1,4 @@
-from .compat import bloomfilter
+import peloton_bloomfilters as bloomfilter
 
 
 class BloomFilter(object):
