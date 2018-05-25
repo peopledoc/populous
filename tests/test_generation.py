@@ -153,7 +153,7 @@ def test_blueprint_generate(mocker):
     if PY2:
         assert lol.generate.call_args == mocker.call(buffer, 17)
     else:
-        assert lol.generate.call_args == mocker.call(buffer, 15)
+        assert lol.generate.call_args == mocker.call(buffer, 20)
     assert buffer.flush.called is True
 
 
