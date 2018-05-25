@@ -6,6 +6,7 @@ Changelog
 
 - Fix unicode error in exceptions with Python 2
 - Fix error with buffers (#35)
+- Use peloton_bloomfilters_py3 with all Python versions
 
 
 0.2.2 (2017-09-12)
