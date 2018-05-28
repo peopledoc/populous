@@ -1,5 +1,3 @@
-import sys
-
 from setuptools import setup, find_packages
 
 import populous
@@ -22,8 +20,6 @@ requirements = [
     "peloton_bloomfilters_py3"
 ]
 
-if sys.version_info < (3, 2):
-    requirements.append('functools32')
 
 setup(
     name="populous",
@@ -38,6 +34,7 @@ setup(
     install_requires=requirements,
     extras_require={
         'tests': ['tox', 'pytest', 'pytest-mock', 'flake8'],
+        ':python_version<"3.2"': ['functools32'],
     },
     entry_points={
         'console_scripts': [
