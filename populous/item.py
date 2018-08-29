@@ -225,10 +225,13 @@ class Item(object):
         logger.info("{:>5} {} written".format(len(batch), self.name))
 
         objs = tuple(e._replace(id=id) for (e, id) in zip(batch, ids))
-        self.store_values(objs)
+        self.store_final_values(objs)
         self.generate_dependencies(buffer, objs)
 
-    def store_values(self, objs):
+    def store_final_values(self, objs):
+        # replace the temporary stored objects by the final value
+        # (now that we know computed fields like 'id')
+
         def _get_values(expression):
             for obj in objs:
                 self.blueprint.vars['this'] = obj
@@ -237,15 +240,42 @@ class Item(object):
 
         for name, expression in self.store_in_global.items():
             store = self.blueprint.vars[name]
-            store.extend(_get_values(expression))
+            store[-len(objs):] = _get_values(expression)
 
-        if self.store_in_item:
-            for obj in objs:
+        for name_expr, value_expr in self.store_in_item.items():
+            stores = {}
+
+            # group the values by each instance of the store,
+            # so that we know how many items we have to update
+            # for each instance
+            for i, obj in enumerate(objs):
                 self.blueprint.vars['this'] = obj
-                for name_expr, value_expr in self.store_in_item.items():
-                    store = name_expr.evaluate(**self.blueprint.vars)
-                    store.append(value_expr.evaluate(**self.blueprint.vars))
+                store = name_expr.evaluate(**self.blueprint.vars)
+                value = value_expr.evaluate(**self.blueprint.vars)
+
+                holder = stores.setdefault(id(store), (store, []))
+                holder[1].append(value)
+
             del self.blueprint.vars['this']
+
+            # now that we have separated the different instance,
+            # we can update the last values
+            for store, values in stores.values():
+                store[-len(values):] = values
+
+    def store_value(self, obj):
+        self.blueprint.vars['this'] = obj
+
+        for name, expression in self.store_in_global.items():
+            store = self.blueprint.vars[name]
+            value = expression.evaluate(**self.blueprint.vars)
+            store.append(value)
+
+        for name_expr, value_expr in self.store_in_item.items():
+            store = name_expr.evaluate(**self.blueprint.vars)
+            store.append(value_expr.evaluate(**self.blueprint.vars))
+
+        del self.blueprint.vars['this']
 
     def generate(self, buffer, count, parent=None):
         factory = ItemFactory(self, parent=parent)
@@ -255,6 +285,7 @@ class Item(object):
             obj = factory.generate()
             del self.blueprint.vars['this']
 
+            self.store_value(obj)
             buffer.add(obj)
 
     def generate_dependencies(self, buffer, batch):
