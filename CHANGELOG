@@ -4,7 +4,7 @@ Changelog
 0.5.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Store intermediate values with 'store_in'
 
 
 0.4.1 (2018-05-28)

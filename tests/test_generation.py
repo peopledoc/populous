@@ -1,4 +1,5 @@
 from datetime import date
+from itertools import count
 
 from populous.backends.base import Backend
 from populous.blueprint import Blueprint
@@ -205,7 +206,7 @@ def test_write_buffer(mocker):
     blueprint.add_item({'name': 'foo', 'table': 'test', 'fields': {'a': 42}})
     item = blueprint.items['foo']
 
-    mocker.patch.object(item, 'store_values')
+    mocker.patch.object(item, 'store_final_values')
     mocker.patch.object(item, 'generate_dependencies')
 
     buffer = Buffer(blueprint, maxlen=10)
@@ -213,7 +214,7 @@ def test_write_buffer(mocker):
 
     objs = tuple(item.namedtuple(id=x, a=42) for x in range(10))
     assert len(buffer.buffers['foo']) == 0
-    assert item.store_values.call_args == mocker.call(objs)
+    assert item.store_final_values.call_args == mocker.call(objs)
     assert item.generate_dependencies.call_args == mocker.call(buffer, objs)
 
 
@@ -406,7 +407,8 @@ def test_generate_dependencies_tree():
     foo1 = blueprint.items['foo1']
     foo1.generate(buffer, foo1.count())
 
-    assert len(blueprint.vars['foo1s']) == 0
+    # only the first level have been generated
+    assert len(blueprint.vars['foo1s']) == 2
     assert len(blueprint.vars['foo2s']) == 0
     assert len(blueprint.vars['foo3s']) == 0
     assert len(blueprint.vars['bars']) == 0
@@ -446,22 +448,37 @@ def test_generate__count_with_var():
 
 def test_store_values():
     class DummyBackend(Backend):
+        counters = {}
+
         def write(self, item, objs):
-            return range(len(objs))
+            counter = self.counters.setdefault(item.name, count())
+            return [next(counter) for _ in objs]
 
     blueprint = Blueprint(backend=DummyBackend())
     blueprint.add_item({'name': 'foo', 'table': 'test',
                         'store_in': {'foos': '$this'}})
     blueprint.add_item({'name': 'bar', 'table': 'test2',
                         'count': {'by': 'foo', 'number': 2},
-                        'store_in': {'this.foo.bar_ids': '$this.id'}})
+                        'store_in': {'this.foo.bars': '$this'},
+                        'fields': {'num': '$(this.foo.bars|length)'}})
 
-    buffer = Buffer(blueprint)
+    buffer = Buffer(blueprint, maxlen=15)
     blueprint.items['foo'].generate(buffer, 10)
-    buffer.flush()
 
-    assert list(foo.id for foo in blueprint.vars['foos']) == list(range(10))
+    # the values have been generated, but empty ids have been stored
+    assert [foo.id for foo in blueprint.vars['foos']] == [None] * 10
 
+    buffer.write(blueprint.items['foo'])
+
+    # the stored ids have now been replaced
+    assert [foo.id for foo in blueprint.vars['foos']] == list(range(10))
+
+    # each foo object contains the corresponding bars, each bar has
+    # an id & a number corresponding to the number of 'bars' in the
+    # current 'foo' at the time of generation
     ids = iter(range(20))
     for foo in blueprint.vars['foos']:
-        assert foo.bar_ids == [next(ids), next(ids)]
+        assert [(bar.id, bar.num) for bar in foo.bars] == [
+            (next(ids), 0),
+            (next(ids), 1),
+        ]
