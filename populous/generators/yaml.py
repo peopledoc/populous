@@ -21,7 +21,7 @@ class Yaml(Generator):
     def _generate(self):
         while True:
             try:
-                yield yaml.load(self.evaluate(self.value))
+                yield yaml.safe_load(self.evaluate(self.value))
             except yaml.YAMLError as e:
                 raise GenerationError(
                     "Item '{}', field '{}': Invalid YAML: {}"
