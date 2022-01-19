@@ -25,7 +25,7 @@ def load_blueprint(*filenames, **kwargs):
 def _get_yaml(filename):
     with open(filename) as f:
         try:
-            return yaml.load(f)
+            return yaml.safe_load(f)
         except yaml.YAMLError as e:
             raise YAMLError(filename, str(e))
 
