@@ -1,17 +1,18 @@
 import random
 
-from cached_property import cached_property
 from faker import Factory
 
+from populous.bloom import BloomFilter
+from populous.compat import cached_property
 from populous.exceptions import GenerationError
 from populous.exceptions import ValidationError
-from populous.vars import Expression, parse_vars
-from populous.bloom import BloomFilter
+from populous.vars import Expression
+from populous.vars import parse_vars
 
 fake = Factory.create()
 
 
-class BaseGenerator(object):
+class BaseGenerator:
 
     def __init__(self, item, field_name, **kwargs):
         self.item = item
@@ -62,10 +63,10 @@ class BaseGenerator(object):
         return parse_vars(value)
 
 
-class NullableMixin(object):
+class NullableMixin:
 
     def get_arguments(self, nullable=0, **kwargs):
-        super(NullableMixin, self).get_arguments(**kwargs)
+        super().get_arguments(**kwargs)
 
         if not nullable:
             self.nullable = 0
@@ -77,10 +78,10 @@ class NullableMixin(object):
     def get_generator(self):
         if self.nullable:
             return self.generate_with_null()
-        return super(NullableMixin, self).get_generator()
+        return super().get_generator()
 
     def generate_with_null(self):
-        generator = super(NullableMixin, self).get_generator()
+        generator = super().get_generator()
         while True:
             if random.random() <= self.evaluate(self.nullable):
                 yield None
@@ -88,11 +89,11 @@ class NullableMixin(object):
                 yield next(generator)
 
 
-class UniquenessMixin(object):
+class UniquenessMixin:
     MAX_TRIES = 10000
 
     def get_arguments(self, unique=False, **kwargs):
-        super(UniquenessMixin, self).get_arguments(**kwargs)
+        super().get_arguments(**kwargs)
 
         self.unique = bool(unique)
         if isinstance(unique, (list, tuple)):
@@ -109,13 +110,13 @@ class UniquenessMixin(object):
     def get_generator(self):
         if self.unique:
             return self.generate_uniquely()
-        return super(UniquenessMixin, self).get_generator()
+        return super().get_generator()
 
     def generate_uniquely(self):
         seen = self.seen
         unique_with = self.unique_with
         tries = 0
-        for value in super(UniquenessMixin, self).get_generator():
+        for value in super().get_generator():
             if isinstance(value, tuple) and hasattr(value, 'id'):
                 key = value.id
             else:

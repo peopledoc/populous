@@ -11,7 +11,7 @@ jinja_env.undefined = jinja2.StrictUndefined
 # same value being generated every time.
 # cf https://github.com/pallets/jinja/pull/478
 
-@jinja2.contextfilter
+@jinja2.pass_context
 def do_random(context, seq):
     """Return a random item from the sequence."""
     try:

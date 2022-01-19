@@ -2,13 +2,13 @@ import array
 import os
 import random
 
+from string import ascii_letters
 from string import ascii_lowercase
 from string import ascii_uppercase
 from string import digits
 from string import printable
 from string import punctuation
 
-from populous.compat import ascii_letters
 from populous.vars import parse_vars
 
 from .base import Generator
@@ -18,7 +18,7 @@ class Text(Generator):
 
     def get_arguments(self, min_length=0, max_length=None, chars='<a-Z><0-9> ',
                       **kwargs):
-        super(Text, self).get_arguments(**kwargs)
+        super().get_arguments(**kwargs)
 
         if min_length is None:
             min_length = 0

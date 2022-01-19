@@ -1,7 +1,7 @@
 import contextlib
 
 
-class Backend(object):
+class Backend:
 
     def __init__(self, *args, **kwargs):
         self.closed = False
