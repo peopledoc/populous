@@ -1,7 +1,7 @@
 from collections import deque, OrderedDict
 
 
-class Buffer(object):
+class Buffer:
 
     def __init__(self, blueprint, maxlen=1000):
         self.blueprint = blueprint

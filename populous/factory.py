@@ -1,6 +1,4 @@
-
-
-class ItemFactory(object):
+class ItemFactory:
 
     def __init__(self, item, parent=None):
         self.item = item
@@ -12,7 +10,7 @@ class ItemFactory(object):
 
     def __getattribute__(self, name):
         try:
-            return super(ItemFactory, self).__getattribute__(name)
+            return super().__getattribute__(name)
         except AttributeError:
             generated = self._generated
 

@@ -4,8 +4,6 @@ from itertools import count
 from populous.backends.base import Backend
 from populous.blueprint import Blueprint
 from populous.buffer import Buffer
-from populous.compat import PY2
-from populous.compat import range
 from populous.factory import ItemFactory
 from populous.item import Item
 
@@ -151,10 +149,7 @@ def test_blueprint_generate(mocker):
     assert foo.generate.call_args == mocker.call(buffer, 10)
     assert bar.generate.called is False
 
-    if PY2:
-        assert lol.generate.call_args == mocker.call(buffer, 17)
-    else:
-        assert lol.generate.call_args == mocker.call(buffer, 20)
+    assert lol.generate.call_args == mocker.call(buffer, 20)
     assert buffer.flush.called is True
 
 

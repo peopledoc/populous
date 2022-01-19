@@ -8,7 +8,7 @@ class Integer(Generator):
 
     def get_arguments(self, min=0, max=(2 ** 32) - 1, to_string=False,
                       **kwargs):
-        super(Integer, self).get_arguments(**kwargs)
+        super().get_arguments(**kwargs)
 
         self.min = parse_vars(min)
         self.max = parse_vars(max)

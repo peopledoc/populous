@@ -4,16 +4,13 @@ import random
 from collections import OrderedDict
 from collections import namedtuple
 
-from cached_property import cached_property
-
 from populous import generators
-from populous.compat import zip
-from populous.compat import range
+from populous.compat import cached_property
 from populous.exceptions import ValidationError
 from populous.factory import ItemFactory
-from populous.vars import parse_vars
 from populous.vars import Expression
 from populous.vars import ValueExpression
+from populous.vars import parse_vars
 
 logger = logging.getLogger('populous')
 
@@ -21,7 +18,7 @@ ITEM_KEYS = ('name', 'parent', 'table', 'count', 'fields', 'store_in')
 COUNT_KEYS = ('number', 'by', 'min', 'max')
 
 
-class Item(object):
+class Item:
 
     def __init__(self, blueprint, name, table, parent=None, store_in=None):
         self.blueprint = blueprint
@@ -36,7 +33,7 @@ class Item(object):
 
         if not table:
             raise ValidationError(
-                "Item '{}' does not have a table.".format(name)
+                f"Item '{name}' does not have a table."
             )
 
         self.name = name
@@ -222,7 +219,7 @@ class Item(object):
                 field.seen.add(values[index], check=False)
 
     def batch_written(self, buffer, batch, ids):
-        logger.info("{:>5} {} written".format(len(batch), self.name))
+        logger.info(f"{len(batch):>5} {self.name} written")
 
         objs = tuple(e._replace(id=id) for (e, id) in zip(batch, ids))
         self.store_final_values(objs)

@@ -1,5 +1,3 @@
-from __future__ import absolute_import
-
 import yaml
 
 from populous.exceptions import GenerationError
@@ -9,7 +7,7 @@ from .base import Generator
 class Yaml(Generator):
 
     def get_arguments(self, value=None, to_json=False, **kwargs):
-        super(Yaml, self).get_arguments(**kwargs)
+        super().get_arguments(**kwargs)
 
         self.value = self.parse_vars(value)
         self.to_json = to_json

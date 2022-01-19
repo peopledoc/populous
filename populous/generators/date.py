@@ -33,7 +33,7 @@ class DateTime(Generator):
 
     def get_arguments(self, past=True, future=False, after=None, before=None,
                       **kwargs):
-        super(DateTime, self).get_arguments(**kwargs)
+        super().get_arguments(**kwargs)
 
         self.past = past
         self.future = future
@@ -68,5 +68,5 @@ class DateTime(Generator):
 class Date(DateTime):
 
     def generate(self):
-        for dt in super(Date, self).generate():
+        for dt in super().generate():
             yield dt.date()

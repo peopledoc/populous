@@ -4,7 +4,7 @@ from .base import Generator
 class Select(Generator):
 
     def get_arguments(self, table=None, where=None, pk='id', **kwargs):
-        super(Select, self).get_arguments(**kwargs)
+        super().get_arguments(**kwargs)
 
         self.table = table
         self.where = self.parse_vars(where)

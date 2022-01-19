@@ -8,7 +8,7 @@ from .base import Generator
 class Choices(Generator):
 
     def get_arguments(self, choices=(), **kwargs):
-        super(Choices, self).get_arguments(**kwargs)
+        super().get_arguments(**kwargs)
 
         if isinstance(choices, str):
             self.from_var = True

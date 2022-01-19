@@ -1,13 +1,12 @@
 import pytest
 
-from populous.compat import range
 from populous.exceptions import GenerationError
 from populous.exceptions import ValidationError
 from populous.vars import parse_vars
 
 
 def test_parse_vars(mocker):
-    class Expression(object):
+    class Expression:
         def __init__(self, value):
             self.value = value
 
@@ -15,7 +14,7 @@ def test_parse_vars(mocker):
             return type(self) == type(other) and self.value == other.value
 
         def __repr__(self):
-            return "{}('{}')".format(type(self).__name__, self.value)
+            return f"{type(self).__name__}('{self.value}')"
 
     class Value(Expression):
         pass
@@ -42,7 +41,7 @@ def test_parse_vars(mocker):
     assert parse_vars('foo $bar') == 'foo $bar'
     assert parse_vars(' ') == ' '
     assert parse_vars(' foo ') == ' foo '
-    assert parse_vars(u'foo') == u'foo'
+    assert parse_vars('foo') == 'foo'
 
     assert parse_vars('$foo') == Value('foo')
     assert parse_vars('$foo.bar') == Value('foo.bar')
@@ -103,7 +102,7 @@ def test_value_expression():
         v.evaluate()
     assert "Error generating value '$foo': 'foo' is undefined" in str(e.value)
 
-    class Val(object):
+    class Val:
         None
 
     a = Val()
@@ -141,7 +140,7 @@ def test_jinja_value_expression():
     msg = "Error generating value '$(foo|upper)': 'foo' is undefined"
     assert msg in str(e.value)
 
-    class Val(object):
+    class Val:
         None
 
     a = Val()
@@ -180,7 +179,7 @@ def test_template_expression():
     t = TemplateExpression('{{ foo|upper }}')
     assert t.evaluate(foo='test') == 'TEST'
 
-    class Val(object):
+    class Val:
         None
 
     a = Val()
@@ -223,7 +222,7 @@ def test_jinja_random():
     from populous.vars import TemplateExpression
 
     j = JinjaValueExpression('[21, 42]|random')
-    assert set(j.evaluate() for _ in range(100)) == set((21, 42))
+    assert {j.evaluate() for _ in range(100)} == {21, 42}
 
     j = JinjaValueExpression('[]|random')
     with pytest.raises(GenerationError) as e:
@@ -233,4 +232,4 @@ def test_jinja_random():
     assert msg in str(e.value)
 
     t = TemplateExpression('{{ [21, 42]|random }}')
-    assert set(t.evaluate() for _ in range(100)) == set(("21", "42"))
+    assert {t.evaluate() for _ in range(100)} == {"21", "42"}

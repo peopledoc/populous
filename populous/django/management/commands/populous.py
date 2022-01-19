@@ -1,17 +1,15 @@
-from __future__ import absolute_import
-
 import argparse
 from collections import OrderedDict
 from functools import partial
+
+import yaml
 
 from django.apps import apps
 from django.core import validators
 from django.core.management.base import BaseCommand
 from django.db import models
 
-import yaml
-from cached_property import cached_property
-
+from populous.compat import cached_property
 
 class SkipField(Exception):
     pass

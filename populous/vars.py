@@ -3,7 +3,6 @@ from operator import attrgetter
 
 import jinja2
 
-from populous.compat import basestring
 from populous.exceptions import GenerationError
 from populous.exceptions import ValidationError
 from populous.jinja import jinja_env
@@ -13,7 +12,7 @@ VAR_REGEX = re.compile(r'^[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*$')
 
 
 def parse_vars(value):
-    if not value or not isinstance(value, basestring):
+    if not value or not isinstance(value, str):
         return value
 
     if value[0] == '$':
@@ -23,7 +22,7 @@ def parse_vars(value):
         if len(value) > 1 and value[1] == '(':
             if value[-1] != ')':
                 raise ValidationError(
-                    "Error parsing '{}': Missing ')'".format(value)
+                    f"Error parsing '{value}': Missing ')'"
                 )
             return JinjaValueExpression(value[2:-1])
 
@@ -35,7 +34,7 @@ def parse_vars(value):
                 .format(value)
             )
         return ValueExpression(value[1:])
-    elif value.startswith('\$'):
+    elif value.startswith(r'\$'):
         # the $ was escaped, remove the escape char
         value = value[1:]
 
@@ -48,7 +47,7 @@ def parse_vars(value):
     return value
 
 
-class Expression(object):
+class Expression:
 
     def evaluate(self, **vars):
         raise NotImplementedError()
@@ -111,7 +110,7 @@ class JinjaValueExpression(Expression):
             return value
         except jinja2.UndefinedError as e:
             raise GenerationError(
-                "Error generating value '$({})': {}".format(self.value, e)
+                f"Error generating value '$({self.value})': {e}"
             )
 
 
@@ -132,5 +131,5 @@ class TemplateExpression(Expression):
             return self.template.render(vars_)
         except jinja2.UndefinedError as e:
             raise GenerationError(
-                "Error generating template '{}': {}".format(self.value, e)
+                f"Error generating template '{self.value}': {e}"
             )

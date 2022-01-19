@@ -6,7 +6,7 @@ from .base import Generator, fake
 class IP(Generator):
 
     def get_arguments(self, ipv4=True, ipv6=True, **kwargs):
-        super(IP, self).get_arguments(**kwargs)
+        super().get_arguments(**kwargs)
         self.ipv4 = ipv4
         self.ipv6 = ipv6
 

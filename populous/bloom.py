@@ -1,7 +1,7 @@
 import peloton_bloomfilters as bloomfilter
 
 
-class BloomFilter(object):
+class BloomFilter:
 
     def __init__(self, capacity=1000, error_rate=0.000001):
         self._capacity = capacity

@@ -1,5 +1,3 @@
-
-
 def test_call_command(capsys):
     import django
     from django.core.management import call_command
