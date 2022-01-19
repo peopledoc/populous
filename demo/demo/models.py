@@ -20,22 +20,35 @@ class World(models.Model):
 
 
 class City(models.Model):
-    world = models.ForeignKey(World, related_name='cities')
-
+    world = models.ForeignKey(
+        World,
+        on_delete=models.CASCADE,
+        related_name='cities'
+    )
     name = models.CharField(max_length=40)
 
 
 class Abode(models.Model):
-    city = models.ForeignKey(City, related_name='abodes')
-    owner = models.OneToOneField('Citizen', related_name='owned_abode',
-                                 null=True)
-
+    city = models.ForeignKey(
+        City,
+        on_delete=models.CASCADE,
+        related_name='abodes'
+    )
+    owner = models.OneToOneField(
+        'Citizen',
+        on_delete=models.CASCADE,
+        related_name='owned_abode',
+        null=True
+    )
     type = models.CharField(max_length=2, choices=ABODE_TYPES)
 
 
 class Citizen(models.Model):
-    abode = models.ForeignKey(Abode, related_name='citizens')
-
+    abode = models.ForeignKey(
+        Abode,
+        on_delete=models.CASCADE,
+        related_name='citizens'
+    )
     first_name = models.CharField(max_length=20)
     middle_name = models.CharField(max_length=20, blank=True, default='')
     last_name = models.CharField(max_length=20)
