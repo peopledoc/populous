@@ -1,13 +1,11 @@
-
+import django
+from django.core.management import call_command
 
 def test_call_command(capsys):
-    import django
-    from django.core.management import call_command
-
     call_command('populous', 'auth', 'app')
 
     out, err = capsys.readouterr()
-    assert out == """items:
+    assert out == f"""items:
 - name: Permission
   table: auth_permission
   fields:
@@ -26,7 +24,7 @@ def test_call_command(capsys):
     name:
       generator: Text
       min_length: 1
-      max_length: 80
+      max_length: 150
       unique: true
 - name: User
   table: auth_user
@@ -43,16 +41,16 @@ def test_call_command(capsys):
     username:
       generator: Text
       min_length: 1
-      max_length: {username_length}
+      max_length: 150
       unique: true
     first_name:
       generator: Text
       min_length: 0
-      max_length: 30
+      max_length: {30 if django.VERSION < (3,1) else 150}
     last_name:
       generator: Text
       min_length: 0
-      max_length: {lastname_length}
+      max_length: 150
     email:
       generator: Email
       min_length: 0
@@ -144,11 +142,12 @@ def test_call_command(capsys):
       unique: false
     char_choices:
       generator: Choices
-      choices: [foo, bar]
+      choices:
+      - foo
+      - bar
     int_choices:
       generator: Choices
-      choices: [1, 2]
-""".format(
-        username_length=30 if django.VERSION < (1, 10) else 150,
-        lastname_length=30 if django.VERSION < (2,) else 150,
-    )
+      choices:
+      - 1
+      - 2
+"""

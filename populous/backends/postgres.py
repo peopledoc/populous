@@ -3,12 +3,8 @@ import random
 import contextlib
 import uuid
 
-try:
-    from functools import lru_cache
-except ImportError:
-    from functools32 import lru_cache
+from functools import lru_cache
 
-from populous.compat import range
 from populous.exceptions import BackendError
 from .base import Backend
 
@@ -22,7 +18,7 @@ except ImportError:
 
 class Postgres(Backend):
     def __init__(self, *args, **kwargs):
-        super(Postgres, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self._current_cursor = None
 
@@ -89,7 +85,7 @@ class Postgres(Backend):
         with self.cursor as cursor:
             cursor.execute("SELECT count(*) FROM {table} {where}".format(
                 table=table,
-                where="WHERE ({})".format(where) if where else '',
+                where=f"WHERE ({where})" if where else '',
             ))
             return cursor.fetchone()[0]
 
@@ -104,8 +100,8 @@ class Postgres(Backend):
                     table=table,
                     fields=', '.join(fields),
                     proportion=min(max_rows / float(count), 1.0),
-                    extra_where="AND ({})".format(where) if where else '',
-                    limit="LIMIT {}".format(max_rows)
+                    extra_where=f"AND ({where})" if where else '',
+                    limit=f"LIMIT {max_rows}"
                 )
             )
 
@@ -123,8 +119,7 @@ class Postgres(Backend):
                 )
             )
 
-            for value in cursor:
-                yield value
+            yield from cursor
 
     @lru_cache()
     def get_pk_column(self, table):

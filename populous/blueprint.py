@@ -4,7 +4,6 @@ from collections import OrderedDict, defaultdict
 
 from populous.bloom import BloomFilter
 from populous.buffer import Buffer
-from populous.compat import basestring
 from populous.exceptions import ValidationError
 from populous.item import Item, COUNT_KEYS, ITEM_KEYS
 
@@ -12,7 +11,7 @@ from populous.item import Item, COUNT_KEYS, ITEM_KEYS
 logger = logging.getLogger('populous')
 
 
-class Blueprint(object):
+class Blueprint:
 
     def __init__(self, items=None, vars_=None, backend=None):
         self.items = OrderedDict(items or {})
@@ -56,7 +55,7 @@ class Blueprint(object):
             parent_name = description['parent']
             if parent_name not in self.items:
                 raise ValidationError(
-                    "Parent '{}' does not exist.".format(parent_name)
+                    f"Parent '{parent_name}' does not exist."
                 )
             parent = self.items[parent_name]
             if not name:
@@ -97,7 +96,7 @@ class Blueprint(object):
             pass
         elif isinstance(count, int):
             item.add_count(number=count)
-        elif isinstance(count, basestring) and count[0] == '$':
+        elif isinstance(count, str) and count[0] == '$':
             item.add_count(number=count)
         else:
             if not isinstance(count, dict):

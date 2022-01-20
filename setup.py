@@ -14,7 +14,6 @@ requirements = [
     "cached-property",
     "dateutils",
     "Faker",
-    "future",
     "Jinja2",
     "PyYAML",
     "peloton_bloomfilters_py3"
@@ -33,8 +32,7 @@ setup(
     packages=find_packages(exclude=['demo']),
     install_requires=requirements,
     extras_require={
-        'tests': ['tox', 'pytest', 'pytest-mock', 'flake8'],
-        ':python_version<"3.2"': ['functools32'],
+        'tests': ['tox', 'pytest', 'pytest-mock', 'flake8', 'isort', 'black'],
     },
     entry_points={
         'console_scripts': [
@@ -45,11 +43,9 @@ setup(
         "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: MIT License",
         "Operating System :: POSIX",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Topic :: Utilities",
     ],
     keywords='populous populate database',

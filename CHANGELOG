@@ -4,7 +4,9 @@ Changelog
 0.6.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Update code for python>=3.7
+- Add support for Django 2.2-3.2
+- Add support for PyYAML 6.0
 
 
 0.5.0 (2018-08-30)

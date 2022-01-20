@@ -16,7 +16,7 @@ class Test(models.Model):
     ip_v4 = models.GenericIPAddressField(protocol='IPv4')
     ip_v6 = models.GenericIPAddressField(protocol='IPv6')
     integer = models.IntegerField()
-    null_boolean = models.NullBooleanField()
+    null_boolean = models.BooleanField(null=True)
     positive_int = models.PositiveIntegerField()
     positive_small_int = models.PositiveSmallIntegerField()
     small_integer = models.SmallIntegerField()

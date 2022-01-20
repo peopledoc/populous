@@ -1,23 +1,8 @@
-import sys
-
-from builtins import range
-from builtins import zip
-from six import string_types as basestring
-
-
-PY2 = sys.version_info[0] == 2
-
-
-if PY2:
-    from string import letters as ascii_letters
-else:
-    from string import ascii_letters
-
+try:
+    from functools import cached_property
+except ImportError:
+    from cached_property import cached_property
 
 __all__ = [
-    'ascii_letters',
-    'basestring',
-    'PY2',
-    'range',
-    'zip',
+    'cached_property',
 ]

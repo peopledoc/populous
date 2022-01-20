@@ -2,12 +2,11 @@ import socket
 from itertools import islice
 from datetime import datetime
 from contextlib import contextmanager
+from string import ascii_letters
 
 import pytest
 
 from populous.backends.base import Backend
-from populous.compat import ascii_letters
-from populous.compat import basestring
 from populous.exceptions import GenerationError
 from populous.exceptions import ValidationError
 from populous import generators
@@ -21,7 +20,7 @@ def not_raises(exception):
     try:
         yield
     except exception:
-        raise pytest.fail("DID RAISE {0}".format(exception))
+        raise pytest.fail(f"DID RAISE {exception}")
 
 
 def take(generator, length=100):
@@ -33,7 +32,7 @@ def validate_ip(ip, family='both'):
         try:
             socket.inet_pton(family, ip)
             return True
-        except socket.error:
+        except OSError:
             return False
 
     if family in ('both', 'IPv4') and check(ip, socket.AF_INET):
@@ -491,7 +490,7 @@ def test_date(blueprint, item):
     generator = generators.Date(item, 'foo', after=2015, before=2016)
     sample = take(generator, 100)
     assert all(e.year == 2015 for e in sample)
-    months = set(e.month for e in sample)
+    months = {e.month for e in sample}
     for month in range(1, 12):
         assert month in months
 
@@ -510,7 +509,7 @@ def test_name(item):
     generator = generators.Name(item, 'foo')
     sample = take(generator, 10)
     assert len(sample) == 10
-    assert all(isinstance(e, basestring) for e in sample)
+    assert all(isinstance(e, str) for e in sample)
     assert all(' ' in e for e in sample)
 
     generator = generators.Name(item, 'foo', max_length=30)
@@ -533,7 +532,7 @@ def test_first_name(item):
     generator = generators.FirstName(item, 'foo')
     sample = take(generator, 10)
     assert len(sample) == 10
-    assert all(isinstance(e, basestring) for e in sample)
+    assert all(isinstance(e, str) for e in sample)
 
     generator = generators.FirstName(item, 'foo', max_length=30)
     sample = take(generator, 10)
@@ -553,7 +552,7 @@ def test_last_name(item):
     generator = generators.LastName(item, 'foo')
     sample = take(generator, 10)
     assert len(sample) == 10
-    assert all(isinstance(e, basestring) for e in sample)
+    assert all(isinstance(e, str) for e in sample)
 
     generator = generators.LastName(item, 'foo', max_length=30)
     sample = take(generator, 10)

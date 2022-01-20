@@ -6,7 +6,7 @@ from .base import Generator, fake
 class Name(Generator):
 
     def get_arguments(self, gender=None, max_length=None, **kwargs):
-        super(Name, self).get_arguments(**kwargs)
+        super().get_arguments(**kwargs)
 
         self.gender = self.parse_vars(gender)
         self.max_length = max_length
@@ -50,7 +50,7 @@ class FirstName(Name):
 class LastName(Generator):
 
     def get_arguments(self, max_length=None, **kwargs):
-        super(LastName, self).get_arguments(**kwargs)
+        super().get_arguments(**kwargs)
 
         self.max_length = max_length
 
