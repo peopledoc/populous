@@ -1,7 +1,15 @@
 Changelog
 =========
 
-0.6.0 (unreleased)
+0.6.1 (unreleased)
+------------------
+
+- Update code for python>=3.7
+- Add support for Django 2.2-3.2
+- Add support for PyYAML 6.0
+
+
+0.6.0 (2022-01-25)
 ------------------
 
 - Update code for python>=3.7
